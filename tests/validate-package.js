@@ -59,6 +59,7 @@ check('helper verifies process creation identity before changing limits', helper
 check('helper persists original limits before applying them', helper.includes('persistBackups()') && helper.includes('makeBackupRecord'));
 check('helper restores original limits when window becomes visible', helper.includes('restoreAllMeasured(`window ${state.windowState}`)'));
 check('helper throttles repeated failed process-target attempts', helper.includes('TARGET_RETRY_DELAY_MS = 2500') && helper.includes('targetRetryAt.get(key)'));
+check('helper refuses to apply new caps from a stale process snapshot', /if \(!state\.snapshotOk \|\| !state\.snapshotAtMs \|\| now - state\.snapshotAtMs > 6500\) return;/.test(helper));
 check('helper excludes dedicated audio-service processes', helper.includes("if (p.role === 'Audio') return false") && !helper.includes('includeAudioProcess'));
 check('helper polls focus at 100 ms', helper.includes('setInterval(tickSafe, 100)'));
 check('helper discovers processes asynchronously on monitor path', helper.includes('refreshSnapshotAsync()') && helper.includes("execFile('powershell.exe'"));
@@ -85,6 +86,9 @@ check('renderers can still shrink toward the 12 MB floor', policy.minimumCapMB('
 check('low CPU near the ceiling does not reduce the limit', policy.decideAdjustment({ role: 'Renderer', currentCapMB: 28, workingSetMB: 25, cpuPercent: 1, lowCpuMs: 12000, lastAdjustmentAt: 0, now: 20000 }) === null);
 check('adjustment cooldown prevents rapid oscillation', policy.decideAdjustment({ role: 'Renderer', currentCapMB: 28, workingSetMB: 15, cpuPercent: 1, lowCpuMs: 12000, lastAdjustmentAt: 17000, now: 20000 }) === null);
 check('adaptive floor is 12 MB and global ceiling is 64 MB', policy.MIN_CAP_MB === 12 && policy.MAX_CAP_MB === 64);
+check('per-role upper bounds remain below the global safety limit', policy.maximumCapMB('Main') === 60 && policy.maximumCapMB('Renderer') === 52);
+check('a process at its role maximum cannot grow further', policy.decideAdjustment({ role: 'Main', currentCapMB: 60, workingSetMB: 50, cpuPercent: 90, highCpuMs: 12000, lastAdjustmentAt: 0, now: 20000 }) === null);
+check('CPU estimate is capped at one logical processor', policy.estimateCpuPercent(0, 4000, 1000) === 100);
 
 for (const [name, source] of [['app/index.js', app], ['helper/helper.js', helper], ['helper/adaptive-policy.js', read('helper/adaptive-policy.js')]]) {
   try { new vm.Script(source, { filename: name }); check(`JavaScript syntax: ${name}`, true); }

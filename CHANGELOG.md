@@ -12,6 +12,7 @@
 - Switched the project license to GPL-3.0 to require redistributions of covered derivative works to retain the copyleft terms.
 - Kept a 24 MB minimum ceiling for the main process while allowing low-activity background renderers to shrink to 12 MB, balancing savings with window restoration.
 - Added adaptive policy unit tests and release checksum workflow.
+- Prevented new limits from being applied using stale process snapshots after discovery failures, and throttled retries for inaccessible targets.
 - Clarified the unsigned-installer/SmartScreen limitations and the reason for the separate native companion.
 
 ## 0.1.4

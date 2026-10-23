@@ -839,6 +839,9 @@ function updateAdaptiveCaps(now) {
 }
 
 function syncActiveCapsWhileHidden() {
+  const now = Date.now();
+  // Do not apply new native limits using a stale process tree after discovery fails.
+  if (!state.snapshotOk || !state.snapshotAtMs || now - state.snapshotAtMs > 6500) return;
   const targets = targetProcesses();
   const wanted = new Set(targets.map(target => recordKey(target)));
 
@@ -848,7 +851,6 @@ function syncActiveCapsWhileHidden() {
 
   const applied = [];
   const failures = [];
-  const now = Date.now();
   for (const target of targets) {
     const key = recordKey(target);
     const existing = cappedProcesses.get(target.pid);
