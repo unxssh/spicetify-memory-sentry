@@ -14,7 +14,7 @@ function read(relative) { return fs.readFileSync(path.join(root, relative), 'utf
 const requiredFiles = [
   'app/index.js', 'app/manifest.json', 'helper/helper.js', 'helper/adaptive-policy.js',
   'helper/package.json', 'installer/Install.ps1', 'installer/Uninstall.ps1', 'Install.bat',
-  'Uninstall.bat', 'PUSH-TO-GITHUB.bat', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
+  'Uninstall.bat', '.gitignore', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
   'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'preview.png',
   '.github/workflows/validate.yml', '.github/workflows/release.yml'
 ];
@@ -29,8 +29,8 @@ try { packageJson = JSON.parse(read('helper/package.json')); } catch (_) { check
 check('Spicetify Custom App manifest is valid', Boolean(appManifest.name && appManifest.icon && appManifest['active-icon']));
 check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'preview.png' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
 check('Marketplace description discloses separate helper', /native companion installer/i.test(marketplaceManifest.description));
-check('maintainer push script requires a Git repository and does not bypass authentication', /git rev-parse --is-inside-work-tree/i.test(read('PUSH-TO-GITHUB.bat')) && /GitHub authentication must already be configured/i.test(read('PUSH-TO-GITHUB.bat')));
-check('development guide documents local checks and bundle publishing', /node tests\/validate-package\.js/.test(read('docs/DEVELOPMENT.md')) && /git push -u origin main/.test(read('docs/DEVELOPMENT.md')));
+check('local publishing helper and generated archives are ignored', /\/PUSH-TO-GITHUB\.bat/.test(read('.gitignore')) && /\*\.bundle/.test(read('.gitignore')) && /\*\.zip/.test(read('.gitignore')));
+check('development guide documents local checks and direct authenticated publishing', /node tests\/validate-package\.js/.test(read('docs/DEVELOPMENT.md')) && /git push -u origin main/.test(read('docs/DEVELOPMENT.md')) && !/Run\s+`PUSH-TO-GITHUB\.bat`/i.test(read('docs/DEVELOPMENT.md')));
 check('README explains native companion requirement', /separate companion process/i.test(read('README.md')));
 check('README documents adaptive CPU and headroom rules', /six seconds/i.test(read('README.md')) && /ten seconds/i.test(read('README.md')));
 check('README documents unsigned SmartScreen limitations', /No unsigned first release can guarantee zero SmartScreen/i.test(read('README.md')));

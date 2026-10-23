@@ -22,11 +22,38 @@ The policy tests run on any OS because `helper/adaptive-policy.js` contains only
 - `docs/BENCHMARKING.md`: repeatable memory/latency A/B test.
 - `docs/RELEASE_CHECKLIST.md`: Windows runtime and publication gates.
 
-## GitHub publishing from the prepared bundle
+## GitHub publishing
 
-1. Clone `MemorySentry-0.2.0.bundle` into a local folder using `git clone MemorySentry-0.2.0.bundle MemorySentry`.
-2. Run `PUSH-TO-GITHUB.bat` from that clone. It sets the remote to the project repository and runs `git push -u origin main`.
-3. Authenticate with Git Credential Manager or GitHub CLI when prompted. The script does not store credentials or bypass authentication.
-4. Check the GitHub Actions workflow results before creating a release tag.
+Use your normal authenticated Git client. Do not commit a local publishing helper script; repository credentials and publishing commands should remain outside the packaged application.
 
-The GitHub connector may be able to read repository metadata while write endpoints remain unavailable. In that case, pushing through the user's authenticated Git client is the intended fallback.
+For a new local checkout:
+
+```powershell
+git clone https://github.com/yanlvl99/spicetify-memory-sentry.git
+cd spicetify-memory-sentry
+git status --short
+```
+
+For the existing repository, verify the local-only helper is ignored and not staged:
+
+```powershell
+git check-ignore -v PUSH-TO-GITHUB.bat
+git status --short
+```
+
+If the helper was tracked previously, remove it from the Git index while keeping the local copy, and commit the updated ignore rules and test suite:
+
+```powershell
+git rm --cached --ignore-unmatch PUSH-TO-GITHUB.bat
+git add .gitignore tests/validate-package.js docs/DEVELOPMENT.md
+git commit -m "chore: exclude local publishing helper and update CI checks"
+```
+
+Configure the remote only if needed, then push explicitly:
+
+```powershell
+git remote -v
+git push -u origin main
+```
+
+Authenticate with Git Credential Manager or GitHub CLI when prompted. Never store tokens in scripts, bypass authentication, or commit machine-specific publishing helpers. Check the GitHub Actions workflow results before creating a release tag.
