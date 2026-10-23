@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Convert the README's privacy, security, installation, troubleshooting and migration references into working relative Markdown links; fix the development guide's same-directory documentation links.
+
 - Clarify that substantial resident-memory reduction while Spotify is minimized/hidden is the intended behavior across supported Windows 10/11 x64 desktop PCs, while actual savings vary by machine and workload.
 - Document the approximately 40 MB initial and 100 MB settled combined Spotify working-set figures as observations from one setup, not guaranteed memory targets.
 - Explain that a very low-end PC can briefly show a black window during restore without that alone proving the page reloaded; verify whether the previous UI state returns.

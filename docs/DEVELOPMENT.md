@@ -35,8 +35,8 @@ Do not put built EXEs, Setup programs, ZIP files, Git bundles, local publishing 
 - native/rust/src/platform/windows.rs: Win32 process/memory/window primitives, process identity checks, Windows version gate and per-user single-instance lock.
 - native/rust/src/runtime.rs: adaptive process monitor, recovery store, loopback API, configuration, logs, upgrade and uninstall actions.
 - installer/inno/MemorySentry.iss: per-user Setup EXE and uninstall wizard.
-- docs/BENCHMARKING.md: repeatable RAM and interaction-latency tests.
-- docs/RELEASE_CHECKLIST.md: release gates.
+- [BENCHMARKING.md](BENCHMARKING.md): repeatable RAM and interaction-latency tests.
+- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md): release gates.
 
 ## Publishing
 

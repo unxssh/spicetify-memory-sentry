@@ -86,4 +86,4 @@ Source and release packaging are public under GPL-3.0. The helper emits no remot
 
 **No unsigned release can guarantee zero SmartScreen or antivirus warnings.** A new Rust executable can still trigger warnings due to publisher/file reputation. Do not bypass security warnings blindly. Verify the download source and SHA-256, inspect the open source, and report suspected false positives with the specific file hash.
 
-See PRIVACY.md, SECURITY.md, docs/INSTALLATION.md, docs/TROUBLESHOOTING.md and docs/RUST-MIGRATION.md.
+See [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), [docs/INSTALLATION.md](docs/INSTALLATION.md), [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) and [docs/RUST-MIGRATION.md](docs/RUST-MIGRATION.md).
