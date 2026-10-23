@@ -3,6 +3,12 @@
 param()
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+
+# Memory Sentry intentionally supports Windows 10/11 client editions only.
+$OperatingSystem = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
+if ($OperatingSystem.ProductType -ne 1 -or $OperatingSystem.Caption -notmatch '\bWindows 10\b|\bWindows 11\b') {
+    throw 'Memory Sentry supports Windows 10 and Windows 11 desktop editions only. No files were changed.'
+}
 $UsePortuguese = [System.Globalization.CultureInfo]::CurrentUICulture.Name -match '^pt(?:-|$)'
 function Get-LocalizedText([string]$English, [string]$Portuguese) {
     if ($UsePortuguese) { return $Portuguese }

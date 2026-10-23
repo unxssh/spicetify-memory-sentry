@@ -1,8 +1,19 @@
 {
   "name": "Memory Sentry",
-  "description": "Adaptive Windows memory management for Spotify Desktop. Requires the open-source native companion installer.",
+  "description": "Windows 10 and Windows 11 only. Adaptive Spotify memory management dashboard; the separate open-source native companion installer is required.",
   "preview": "preview.png",
   "readme": "README.md",
-  "authors": [{ "name": "yanlvl99", "url": "https://github.com/yanlvl99" }],
-  "tags": ["performance", "memory", "windows", "adaptive", "open-source"]
+  "authors": [
+    {
+      "name": "yanlvl99",
+      "url": "https://github.com/yanlvl99"
+    }
+  ],
+  "tags": [
+    "performance",
+    "memory",
+    "windows",
+    "adaptive",
+    "open-source"
+  ]
 }

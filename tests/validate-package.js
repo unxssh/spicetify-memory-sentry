@@ -15,7 +15,7 @@ const requiredFiles = [
   'app/index.js', 'app/manifest.json', 'helper/helper.js', 'helper/adaptive-policy.js',
   'helper/package.json', 'installer/Install.ps1', 'installer/Uninstall.ps1', 'Install.bat',
   'Uninstall.bat', '.gitignore', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
-  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'preview.png',
+  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'preview.png',
   '.github/workflows/validate.yml', '.github/workflows/release.yml'
 ];
 for (const file of requiredFiles) check(`exists: ${file}`, fs.existsSync(path.join(root, file)));
@@ -29,6 +29,8 @@ try { packageJson = JSON.parse(read('helper/package.json')); } catch (_) { check
 check('Spicetify Custom App manifest is valid', Boolean(appManifest.name && appManifest.icon && appManifest['active-icon']));
 check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'preview.png' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
 check('Marketplace description discloses separate helper', /native companion installer/i.test(marketplaceManifest.description));
+check('Marketplace listing explicitly limits support to Windows 10 and 11', /Windows 10 and Windows 11 only/i.test(marketplaceManifest.description));
+check('installer enforces Windows 10/11 support before modifications', /Win32_OperatingSystem/.test(installer) && /Windows 10/.test(installer) && /Windows 11/.test(installer));
 check('local publishing helper and generated archives are ignored', /\/PUSH-TO-GITHUB\.bat/.test(read('.gitignore')) && /\*\.bundle/.test(read('.gitignore')) && /\*\.zip/.test(read('.gitignore')));
 check('development guide documents local checks and direct authenticated publishing', /node tests\/validate-package\.js/.test(read('docs/DEVELOPMENT.md')) && /git push -u origin main/.test(read('docs/DEVELOPMENT.md')) && !/Run\s+`PUSH-TO-GITHUB\.bat`/i.test(read('docs/DEVELOPMENT.md')));
 check('README explains native companion requirement', /separate companion process/i.test(read('README.md')));
@@ -45,9 +47,14 @@ const helper = read('helper/helper.js');
 const installer = read('installer/Install.ps1');
 const uninstaller = read('installer/Uninstall.ps1');
 const validation = read('.github/workflows/validate.yml');
+const rustCargo = read('native/rust/Cargo.toml');
+const rustLib = read('native/rust/src/lib.rs');
+const rustMain = read('native/rust/src/main.rs');
 check('dashboard supports automatic Portuguese and English', /navigator\.language/i.test(app) && /pt-BR/i.test(app) && /Auto language: English/i.test(app));
 check('dashboard has a GitHub release button when helper is absent', /MSSOpenGitHub/i.test(app) && /github\.com\/yanlvl99\/spicetify-memory-sentry/i.test(app));
-check('dashboard links to Node.js if needed', /MSSOpenNode/i.test(app) && /nodejs\.org\/en\/download/i.test(app));
+check('dashboard links to Node.js if needed for the current beta', /MSSOpenNode/i.test(app) && /nodejs\.org\/en\/download/i.test(app));
+check('dashboard offers official releases and Marketplace setup guide', /MSS_RELEASES_URL/.test(app) && /MSS_INSTALL_GUIDE_URL/.test(app) && /installGuideButton/.test(app));
+check('installation docs explain standalone and Marketplace paths', /Path A: standalone installer/.test(read('docs/INSTALLATION.md')) && /Path B: Marketplace/.test(read('docs/INSTALLATION.md')));
 check('dashboard has no manual fixed RAM cap selector', !/workingSetLimitMB/.test(app) && !/Teto rígido de RAM por processo/.test(app));
 check('dashboard shows per-process CPU and adaptive ceiling', /process\.cpuPercent/i.test(app) && /process\.limitMB/i.test(app));
 check('dashboard explains local-only diagnostics', /No telemetry is uploaded/i.test(app));
@@ -73,6 +80,9 @@ check('installer has no elevation request', !/RunAs|Verb\s+RunAs/i.test(installe
 check('uninstaller restores limits before removing companion', uninstaller.includes("'--restore-limits'") && uninstaller.indexOf("'--restore-limits'") < uninstaller.indexOf('foreach ($name'));
 check('package uses pinned Koffi and correct version', packageJson.version === '0.2.0' && packageJson.dependencies?.koffi === '3.3.3' && packageJson.engines?.node === '>=22');
 check('CI runs package validation', validation.includes('node tests/validate-package.js'));
+check('Rust scaffold uses a minimal standard-library dependency policy', rustCargo.includes('name = "memory-sentry-native"') && !rustCargo.includes('[dependencies]'));
+check('Rust policy has pure, testable adaptive logic', rustLib.includes('decide_adjustment') && rustLib.includes('#[cfg(test)]'));
+check('Rust binary explicitly refuses to act before feature parity', rustMain.includes('does not apply working-set limits yet') || rustMain.includes('not yet the active helper'));
 
 // Exercise the pure adaptive policy without Windows APIs.
 check('main process starts with its role baseline', policy.baseCapMB('Main') === 36);

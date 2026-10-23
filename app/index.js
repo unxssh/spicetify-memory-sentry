@@ -5,17 +5,19 @@ const h = MSSReact.createElement;
 const MSS_API = 'http://127.0.0.1:38472';
 const MSS_TOKEN = '__MSS_TOKEN__';
 const MSS_GITHUB_URL = 'https://github.com/yanlvl99/spicetify-memory-sentry';
+const MSS_RELEASES_URL = `${MSS_GITHUB_URL}/releases`;
+const MSS_INSTALL_GUIDE_URL = `${MSS_GITHUB_URL}/blob/main/docs/INSTALLATION.md`;
 const MSS_LOCALE = (typeof navigator !== 'undefined' && /^pt(?:-|$)/i.test(navigator.language || '')) ? 'pt-BR' : 'en-US';
 const MSS_PT = MSS_LOCALE === 'pt-BR';
 
 const MSS_TEXT = {
   en: {
     kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · v0.2.0', title: 'Memory Sentry',
-    intro: 'Adaptive memory management for Spotify Desktop. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
+    intro: 'Adaptive memory management for Spotify Desktop. Supported operating systems: Windows 10 and Windows 11 only. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
     connected: 'Companion connected', unavailable: 'Connection unavailable', waiting: 'Waiting for companion',
     helperMissingTitle: 'Windows companion is not connected',
-    helperMissingBody: 'The Spicetify page cannot control native Windows memory limits on its own. Download the open-source project ZIP from GitHub, install the Windows companion, then reopen Spotify.',
-    helperButton: 'Open source & downloads', nodeButton: 'Get Node.js', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
+    helperMissingBody: 'The Marketplace installs this dashboard only; it cannot install the native Windows companion. Use the official installer or follow the setup guide. Windows 10 and Windows 11 only. This current beta requires Node.js 22+; the Rust replacement is still being prepared.',
+    helperButton: 'Open official releases', installGuideButton: 'Marketplace setup guide', nodeButton: 'Get Node.js 22+ (current beta)', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
     spotifyRam: 'Spotify resident memory', ramNote: '{count} Spotify processes detected. Summing working sets can double-count shared pages.',
     optimizedRam: 'Managed-process memory', managedNote: '{count} non-audio processes are currently eligible for optimization.',
     activeLimits: 'Adaptive limits active', activeNote: 'Per-process working-set ceilings managed automatically.',
@@ -33,19 +35,19 @@ const MSS_TEXT = {
     behavior: 'Automatic policy', active: 'Enable automatic optimization', autoExplanation: 'Optimize only after Spotify has remained minimized or hidden for the selected delay. Original native limits are restored when it becomes visible.',
     delay: 'Delay after minimize/hide', delayExplanation: 'Avoids optimizing during brief minimizations. Process limits adapt automatically; there is no fixed user-set RAM cap.',
     seconds: '{value} seconds', save: 'Save settings', saving: 'Saving…', savedLocal: 'Settings are stored locally on this PC.',
-    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local companion. Check that installation completed and Node.js is available. The API is restricted to 127.0.0.1.',
-    footer: 'Open source under GPL-3.0. No telemetry is uploaded. CPU and memory metrics stay on this computer. The companion uses a separate process because a Spicetify JavaScript app cannot call the required Win32 working-set APIs directly.',
+    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local companion. Check that installation completed and Node.js 22+ is available for this beta. The API is restricted to 127.0.0.1.',
+    footer: 'Supported OS: Windows 10 and Windows 11 only. Open source under GPL-3.0. No telemetry is uploaded. CPU and memory metrics stay on this computer. The companion uses a separate process because a Spicetify JavaScript app cannot call the required Win32 working-set APIs directly. The Rust helper is experimental and is not yet the active replacement.',
     confirmRestore: 'Restore the original Windows working-set limits for Spotify processes now? If Spotify is still hidden, automatic optimization may apply adaptive limits again after the configured delay.',
     restoreFailed: 'Could not restore the original limits.', saveFailed: 'Could not save settings.', helperApiError: 'The local companion returned an error.',
     window: { foreground: 'Spotify in foreground', 'background-visible': 'Spotify visible in background', minimized: 'Spotify minimized', hidden: 'Spotify window hidden', 'not-running': 'Spotify is not running', 'window-not-found': 'Spotify found; window not located', 'window-check-error': 'Window state unavailable', 'not-detected': 'Waiting for detection' }
   },
   pt: {
     kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · v0.2.0', title: 'Memory Sentry',
-    intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
+    intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Sistemas compatíveis: somente Windows 10 e Windows 11. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
     connected: 'Auxiliar conectado', unavailable: 'Conexão indisponível', waiting: 'Aguardando auxiliar',
     helperMissingTitle: 'O auxiliar do Windows não está conectado',
-    helperMissingBody: 'A página do Spicetify não consegue controlar sozinha os limites nativos de memória do Windows. Baixe o ZIP do projeto de código aberto no GitHub, instale o auxiliar do Windows e reabra o Spotify.',
-    helperButton: 'Abrir código e downloads', nodeButton: 'Baixar Node.js', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
+    helperMissingBody: 'O Marketplace instala apenas este painel; ele não instala o auxiliar nativo do Windows. Use o instalador oficial ou siga o guia de instalação. Compatível somente com Windows 10 e Windows 11. Esta versão beta atual exige Node.js 22+; a substituição em Rust ainda está em preparação.',
+    helperButton: 'Abrir releases oficiais', installGuideButton: 'Guia de instalação do Marketplace', nodeButton: 'Baixar Node.js 22+ (beta atual)', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
     spotifyRam: 'Memória residente do Spotify', ramNote: '{count} processos do Spotify detectados. A soma dos working sets pode contar páginas compartilhadas mais de uma vez.',
     optimizedRam: 'Memória dos processos gerenciados', managedNote: '{count} processos sem relação com áudio estão elegíveis para otimização.',
     activeLimits: 'Limites adaptativos ativos', activeNote: 'Limites de working set por processo, administrados automaticamente.',
@@ -145,7 +147,10 @@ function MSSRoleLabel(role) {
   return ({ Main: 'Principal', GPU: 'GPU', Renderer: 'Renderização', Utility: 'Utilitário', Crashpad: 'Relatório de falhas', Helper: 'Auxiliar', Audio: 'Áudio' })[role] || role;
 }
 function MSSOpenGitHub() {
-  window.open(MSS_GITHUB_URL, '_blank', 'noopener,noreferrer');
+  window.open(MSS_RELEASES_URL, '_blank', 'noopener,noreferrer');
+}
+function MSSOpenInstallGuide() {
+  window.open(MSS_INSTALL_GUIDE_URL, '_blank', 'noopener,noreferrer');
 }
 function MSSOpenNode() {
   window.open('https://nodejs.org/en/download', '_blank', 'noopener,noreferrer');
@@ -210,7 +215,7 @@ function MSSApp() {
         h('div', { className: 'mss-small', style: { marginTop: '10px' } }, `${MSSWindowLabel(spotify.windowState || 'not-detected')} · ${MSS_PT ? 'Idioma automático: português' : 'Auto language: English'}`)),
       h('div', { className: 'mss-pill' }, h('span', { className: 'mss-dot', style: { background: error ? '#e05252' : (helperRunning ? 'var(--spice-button,#1ed760)' : '#d6a03d') } }), error ? tx('unavailable') : (helperRunning ? tx('connected') : tx('waiting')))
     ),
-    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${tx('statusError')}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenNode }, tx('nodeButton')))) : null,
+    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${tx('statusError')}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenInstallGuide }, tx('installGuideButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenNode }, tx('nodeButton')))) : null,
     h('div', { className: 'mss-notice mss-notice-warn' }, tx('safety')),
     h('div', { className: 'mss-grid' },
       card(tx('spotifyRam'), MSSFormatMB(memory.spotifyTotalMB), 'MB', tx('ramNote', { count: memory.processCount || 0 })),

@@ -1,6 +1,6 @@
 # Memory Sentry for Spotify Desktop
 
-**Adaptive, open-source working-set management for Windows and Spicetify.** Memory Sentry reduces Spotify's resident memory while its window is minimized or hidden, then restores the original Windows working-set limits when Spotify becomes visible again.
+**Windows 10 and Windows 11 only. Adaptive, open-source working-set management for Spotify Desktop and Spicetify.** Memory Sentry reduces Spotify's resident memory while its window is minimized or hidden, then restores the original Windows working-set limits when Spotify becomes visible again.
 
 > **Experimental software.** A lower resident working set can increase page faults and delay UI recovery. Back up important work, test against your own workload, and disable optimization if Spotify becomes unstable. Memory Sentry does not promise instant recovery or a specific RAM saving.
 
@@ -23,22 +23,52 @@ A Spicetify Custom App runs JavaScript inside Spotify's UI and does not have dir
 
 The companion runs as the current user, does not request administrator privileges, and exposes its API only on `127.0.0.1`. Requests require a random per-install token, a Spotify HTTPS origin, and a local host header. The UI can open the official GitHub releases page when the companion is unavailable.
 
-## Requirements
+## Supported operating systems
 
-- Windows 10 or 11.
+Memory Sentry supports **Windows 10 and Windows 11 desktop editions only**. macOS, Linux, Windows 7/8/8.1, and Windows Server are not supported. The installer checks the OS before making changes.
+
+## Choose your installation path
+
+### Path A — standalone installer (recommended)
+
+This is the simplest route for people who already know what Memory Sentry is.
+
+1. Open [GitHub Releases](https://github.com/yanlvl99/spicetify-memory-sentry/releases).
+2. Download the complete release ZIP and its SHA-256 checksum.
+3. Verify that the checksum matches the downloaded archive.
+4. Close Spotify and extract the ZIP.
+5. Run `Install.bat` without administrator privileges and follow the prompts.
+6. Reopen Spotify and confirm that Memory Sentry appears in the sidebar.
+
+A complete installer release will bundle the supported companion and configure the dashboard. **Do not treat the Rust migration scaffold as a supported replacement yet.** Current 0.2.0 beta packages still use the Node.js companion and require Node.js 22+; the Rust port must pass Windows runtime and recovery tests before replacing it.
+
+### Path B — install from Spicetify Marketplace
+
+Marketplace is the discovery path for users browsing Custom Apps. It installs the dashboard, but it does not install arbitrary native Windows programs.
+
+1. Install Memory Sentry from Marketplace like any other Custom App.
+2. Open it in Spotify. If the companion is missing, the dashboard explains why and provides official download and setup-guide links.
+3. Follow the official setup guide to obtain the complete release ZIP.
+4. Close Spotify and run `Install.bat` from the extracted ZIP.
+5. Reopen Spotify. Use **Refresh** to confirm that the local companion has connected.
+
+Installing only the Marketplace Custom App is **not enough** for native memory optimization. Until an official release is published, the release page may not contain a complete downloadable package; do not advertise the Marketplace listing as ready for public users before that release is available and tested.
+
+## Requirements for the current 0.2.0 beta
+
+- Windows 10 or Windows 11 desktop edition.
 - Spotify Desktop with Spicetify CLI installed.
-- Node.js 22 or newer, including npm. Get a supported release from [nodejs.org](https://nodejs.org/en/download).
+- Node.js 22 or newer, including npm, for the current JavaScript companion. Get it from [nodejs.org](https://nodejs.org/en/download).
 - Internet access during setup to retrieve the pinned Koffi dependency from the npm registry.
 
-## Install or update
+## Current install/update process
 
-1. Download the release ZIP from [GitHub Releases](https://github.com/yanlvl99/spicetify-memory-sentry/releases/latest).
-2. Close Spotify completely.
-3. Extract the ZIP. If Windows has marked the downloaded ZIP as blocked, open its Properties and review the publisher/source before deciding whether to unblock it.
-4. Run `Install.bat` without administrator privileges.
-5. Reopen Spotify and select **Memory Sentry** from the sidebar.
+1. Close Spotify completely.
+2. Extract the project/release ZIP.
+3. Run `Install.bat` without administrator privileges.
+4. Reopen Spotify and select **Memory Sentry** from the sidebar.
 
-The installer places the Custom App under `%APPDATA%\spicetify\CustomApps\SpicetifyMemorySentry`, the companion under `%LOCALAPPDATA%\SpicetifyMemorySentry`, and a current-user startup launcher under the user's Startup folder. It stages dependencies before replacing an existing install and attempts to restore any saved limits first.
+The installer places the Custom App under `%APPDATA%\spicetify\CustomApps\SpicetifyMemorySentry`, the companion under `%LOCALAPPDATA%\SpicetifyMemorySentry`, and a current-user startup launcher in the Startup folder. It stages dependencies before replacing an existing install and attempts to restore saved limits first.
 
 To uninstall, close Spotify and run `Uninstall.bat`. The uninstaller attempts to restore saved Windows limits before removing the companion. Logs are preserved for troubleshooting.
 
@@ -48,6 +78,9 @@ The dashboard shows the current Spotify working-set estimate, process CPU estima
 
 See [docs/BENCHMARKING.md](docs/BENCHMARKING.md) for a repeatable test plan.
 
+## Rust migration status
+
+A standard-library Rust policy/runtime scaffold is being prepared under `native/rust`. It is not yet the active memory-control helper. The existing Node.js helper remains the only supported implementation until the Rust version has equivalent process discovery, audio-process protection, crash-safe restoration, a secured local API, and Windows 10/11 integration tests.
 ## Open source, safety, and antivirus notices
 
 - Source code and release packaging are public for inspection under GPL-3.0.

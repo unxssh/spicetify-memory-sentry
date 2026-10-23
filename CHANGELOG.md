@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Clarify standalone and Marketplace install paths, supported Windows versions, and native companion requirements.
+- Add the first Rust migration scaffold and dedicated cross-platform policy tests.
+
+
+
 ## 0.2.0 — Adaptive policy preview
 
 - Replaced the user-selected fixed per-process cap with a role-based adaptive policy.
