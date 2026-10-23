@@ -35,7 +35,7 @@ const MSS_TEXT = {
     behavior: 'Automatic policy', active: 'Enable automatic optimization', autoExplanation: 'Optimize only after Spotify has remained minimized or hidden for the selected delay. Original native limits are restored when it becomes visible.',
     delay: 'Delay after minimize/hide', delayExplanation: 'Avoids optimizing during brief minimizations. Process limits adapt automatically; there is no fixed user-set RAM cap.',
     seconds: '{value} seconds', save: 'Save settings', saving: 'Saving…', savedLocal: 'Settings are stored locally on this PC.',
-    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local Rust companion. Run the official Windows setup and reopen Spotify. The API is restricted to 127.0.0.1.',
+    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local Rust companion. The diagnostic appears in brackets; check startup.log in %LOCALAPPDATA%\\SpicetifyMemorySentry\\logs.',
     footer: 'Supported OS: Windows 10 and Windows 11 desktop editions only. The native Rust companion is open source under GPL-3.0. No telemetry is uploaded. CPU and memory diagnostics stay on this PC. A separate process is required to call native Win32 working-set APIs.',
     confirmRestore: 'Restore the original Windows working-set limits for Spotify processes now? If Spotify is still hidden, automatic optimization may apply adaptive limits again after the configured delay.',
     restoreFailed: 'Could not restore the original limits.', saveFailed: 'Could not save settings.', helperApiError: 'The local companion returned an error.',
@@ -65,7 +65,7 @@ const MSS_TEXT = {
     behavior: 'Política automática', active: 'Ativar otimização automática', autoExplanation: 'Otimiza somente depois que o Spotify permanece minimizado ou oculto pelo tempo selecionado. Os limites nativos originais são restaurados quando a janela fica visível.',
     delay: 'Atraso após minimizar/ocultar', delayExplanation: 'Evita otimizar em minimizações rápidas. Os limites por processo se adaptam automaticamente; não existe um teto fixo de RAM configurado manualmente.',
     seconds: '{value} segundos', save: 'Salvar configurações', saving: 'Salvando…', savedLocal: 'As configurações ficam salvas localmente neste PC.',
-    events: 'Atividade recente', noEvents: 'Ainda não há atividade registrada.', statusError: 'Não foi possível conectar ao auxiliar Rust local. Execute o instalador oficial do Windows e reabra o Spotify. A API aceita conexões somente por 127.0.0.1.',
+    events: 'Atividade recente', noEvents: 'Ainda não há atividade registrada.', statusError: 'Não foi possível conectar ao auxiliar Rust local. O diagnóstico aparece entre colchetes; consulte startup.log em %LOCALAPPDATA%\\SpicetifyMemorySentry\\logs.',
     footer: 'Compatível apenas com Windows 10 e Windows 11 (desktop). O auxiliar nativo em Rust é código aberto sob GPL-3.0. Nenhuma telemetria é enviada. Os diagnósticos de CPU e memória ficam neste PC. Um processo separado é necessário para chamar as APIs Win32 de working set.',
     confirmRestore: 'Restaurar agora os limites originais de working set dos processos do Spotify? Se o Spotify continuar oculto, a otimização automática poderá aplicar limites adaptativos novamente depois do atraso configurado.',
     restoreFailed: 'Não foi possível restaurar os limites originais.', saveFailed: 'Não foi possível salvar as configurações.', helperApiError: 'O auxiliar local retornou um erro.',
@@ -172,7 +172,12 @@ function MSSApp() {
         if (!alive) return;
         setStatus(data); setError('');
         if (!settingsLoaded && data.config) { setConfig({ autoOptimize: data.config.autoOptimize !== false, hiddenDelaySeconds: data.config.hiddenDelaySeconds || 2 }); setSettingsLoaded(true); }
-      } catch (err) { if (alive) setError(tx('statusError')); }
+      } catch (err) {
+        if (alive) {
+          const detail = err && err.message ? String(err.message) : String(err || 'Unknown error');
+          setError(tx('statusError') + ' [' + detail + ']');
+        }
+      }
     }
     refresh();
     const timer = window.setInterval(refresh, 2500);

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.3.1 — Companion startup diagnostics (experimental)
+
+- Make the installer launch the native companion automatically instead of relying on an optional post-install checkbox.
+- Verify the authenticated local status API before the launcher reports success.
+- Capture detached monitor startup errors in a local startup log.
+- Show specific HTTP/API failure details in the dashboard instead of hiding them behind a generic connection message.
+- Keep the release experimental until real Windows 10/11 audio, recovery, and restore-latency tests are complete.
+
 ## 0.3.0 — Native Windows companion (experimental)
 
 - Add a native Rust companion and per-user Inno Setup installer for Windows 10/11 x64.

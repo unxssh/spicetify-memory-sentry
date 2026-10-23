@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.3.0"
+  #define AppVersion "0.3.1"
 #endif
 #ifndef StageDir
   #define StageDir "..\..\dist\stage"
@@ -34,7 +34,7 @@ UsePreviousLanguage=yes
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=no
 SetupLogging=yes
-VersionInfoVersion=0.3.0.0
+VersionInfoVersion=0.3.1.0
 Uninstallable=yes
 
 [Languages]
@@ -77,7 +77,7 @@ Name: "{autoprograms}\Memory Sentry\{cm:InstallationGuide}"; Filename: "{app}\do
 Name: "{autoprograms}\Memory Sentry\Uninstall Memory Sentry"; Filename: "{uninstallexe}"
 
 [Run]
-Filename: "{app}\MemorySentry.exe"; Parameters: "--launch"; Description: "{cm:StartMemorySentry}"; Flags: postinstall nowait skipifsilent runhidden
+Filename: "{app}\MemorySentry.exe"; Parameters: "--launch"; Description: "{cm:StartMemorySentry}"; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{userappdata}\spicetify\CustomApps\SpicetifyMemorySentry"

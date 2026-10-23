@@ -82,6 +82,9 @@ check('helper does not use fixed manual cap configuration', !/settings\.workingS
 check('new installer uses the native Rust executable and fails closed on OS/prerequisites', /MemorySentry\.exe/.test(installer) && /--check-install/.test(installer) && /Windows 10/.test(installer) && /Windows 11/.test(installer));
 check('Inno Setup packages the app and guards install/upgrade/uninstall', /PrivilegesRequired=lowest/.test(setupScript) && /--check-os/.test(setupScript) && /--prepare-upgrade/.test(setupScript) && /InitializeUninstall/.test(setupScript) && /--pre-uninstall/.test(setupScript));
 check('build script compiles Inno setup and writes checksums', /ISCC\.exe/.test(buildScript) && /Get-FileHash/.test(buildScript) && /MemorySentrySetup-/.test(buildScript));
+check('dashboard preserves detailed local API failures', app.includes('err && err.message') && app.includes("setError(tx('statusError') + ' [' + detail + ']')"));
+check('Rust launcher records early startup failures and verifies API readiness', rustRuntime.includes('startup.log') && rustRuntime.includes('request_status(settings.port, &settings.token)') && rustRuntime.includes('failed to become ready after 5 seconds'));
+check('installer always launches the companion after setup', setupScript.includes('Flags: runhidden') && !setupScript.includes('Flags: postinstall nowait skipifsilent runhidden'));
 check('installer avoids ExecutionPolicy Bypass', !/ExecutionPolicy\s+Bypass/i.test(read('Install.bat')) && !/ExecutionPolicy\s+Bypass/i.test(read('Uninstall.bat')));
 check('installer has no elevation request', !/RunAs|Verb\s+RunAs/i.test(installer));
 check('uninstaller invokes recovery-aware native pre-uninstall before removing files', /--pre-uninstall/.test(uninstaller) && uninstaller.indexOf('--pre-uninstall') < uninstaller.indexOf('Remove-Item -LiteralPath $AppTarget'));

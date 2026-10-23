@@ -2,7 +2,7 @@
 
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
-> **0.3.0 experimental release — use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. CI build and policy tests pass, but the full real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains incomplete; do not treat this build as stable.
+> **0.3.1 experimental release — use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. CI build and policy tests pass, but the full real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains incomplete; do not treat this build as stable.
 
 ## Choose your installation path
 
@@ -55,7 +55,7 @@ macOS, Linux, Windows 7/8/8.1, Windows Server and ARM64 Windows are not supporte
 - User startup registration: HKCU\Software\Microsoft\Windows\CurrentVersion\Run
 - Logs: %LOCALAPPDATA%\MemorySentry\logs after uninstall
 
-The companion runs as a separate per-user process under the current Windows user, exposes its dashboard API only on 127.0.0.1, requires a random per-install token, validates the Spotify HTTPS origin and loopback Host header, and does not upload telemetry. It checks the process creation timestamp before changing or restoring limits, persists recovery data before applying a cap, and stops upgrade/uninstall if a limit cannot be safely restored.
+The companion runs as a separate per-user process under the current Windows user, exposes its dashboard API only on 127.0.0.1, requires a random per-install token, validates the Spotify HTTPS origin and loopback Host header, and does not upload telemetry. The installer launches it automatically and verifies the local status API. Early startup failures are recorded in %LOCALAPPDATA%\\SpicetifyMemorySentry\\logs\\startup.log. It checks the process creation timestamp before changing or restoring limits, persists recovery data before applying a cap, and stops upgrade/uninstall if a limit cannot be safely restored.
 
 ## Upgrade and uninstall
 

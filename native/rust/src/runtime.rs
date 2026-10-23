@@ -18,7 +18,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "0.3.0";
+const VERSION: &str = "0.3.1";
 const DEFAULT_PORT: u16 = 38472;
 const DEFAULT_HIDDEN_DELAY_SECONDS: u64 = 2;
 const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
@@ -1583,11 +1583,62 @@ fn start_background_copy() -> Result<(), String> {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
-    Command::new(exe).arg("--monitor").creation_flags(CREATE_NO_WINDOW).stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).spawn()
+    let base = exe.parent().ok_or("Could not determine installation directory")?;
+    let log_dir = base.join("logs");
+    fs::create_dir_all(&log_dir).map_err(|e| format!("Could not create startup log directory: {e}"))?;
+    let stdout_log = OpenOptions::new().create(true).append(true).open(log_dir.join("startup.log"))
+        .map_err(|e| format!("Could not open startup log: {e}"))?;
+    let stderr_log = stdout_log.try_clone().map_err(|e| format!("Could not duplicate startup log handle: {e}"))?;
+    Command::new(exe).arg("--monitor").creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::null()).stdout(Stdio::from(stdout_log)).stderr(Stdio::from(stderr_log)).spawn()
         .map(|_| ())
         .map_err(|e| format!("Could not start the companion: {e}"))
 }
 
+fn request_status(port: u16, token: &str) -> Result<(), String> {
+    let mut stream = TcpStream::connect(("127.0.0.1", port))
+        .map_err(|e| format!("Could not connect to the local API on port {port}: {e}"))?;
+    stream.set_read_timeout(Some(Duration::from_millis(700))).ok();
+    stream.set_write_timeout(Some(Duration::from_millis(700))).ok();
+    let request = format!(
+        "GET /api/status HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nOrigin: https://xpui.app.spotify.com\r\nAuthorization: Bearer {token}\r\nConnection: close\r\n\r\n"
+    );
+    stream.write_all(request.as_bytes()).map_err(|e| format!("Could not send local API health check: {e}"))?;
+    let mut response = String::new();
+    stream.read_to_string(&mut response).map_err(|e| format!("Could not read local API health check: {e}"))?;
+    if response.starts_with("HTTP/1.1 200") {
+        return Ok(());
+    }
+    let status = response.lines().next().unwrap_or("No HTTP response");
+    let detail = response.split_once("\r\n\r\n").map(|(_, body)| body.trim()).unwrap_or("");
+    Err(if detail.is_empty() { format!("Local API health check returned {status}") } else { format!("Local API health check returned {status}: {detail}") })
+}
+
 pub fn launch_monitor() -> Result<(), String> {
-    start_background_copy()
+    let base = install_dir()?;
+    let settings = load_settings(&base.join("settings.json"))?;
+
+    // The monitor might already be running after login or a previous launch attempt.
+    if request_status(settings.port, &settings.token).is_ok() {
+        return Ok(());
+    }
+
+    start_background_copy()?;
+    let mut last_error = String::from("The companion did not respond before the timeout.");
+    for _ in 0..50 {
+        match request_status(settings.port, &settings.token) {
+            Ok(()) => return Ok(()),
+            Err(error) => last_error = error,
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
+
+    let startup_path = base.join("logs").join("startup.log");
+    let startup_detail = fs::read_to_string(&startup_path).unwrap_or_default();
+    let startup_tail = startup_detail.lines().rev().take(8).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join(" | ");
+    if startup_tail.is_empty() {
+        Err(format!("Memory Sentry failed to become ready after 5 seconds: {last_error}. See {}", startup_path.display()))
+    } else {
+        Err(format!("Memory Sentry failed to become ready after 5 seconds: {last_error}. Startup log: {startup_tail}"))
+    }
 }

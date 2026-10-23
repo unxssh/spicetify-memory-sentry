@@ -1,10 +1,16 @@
 # Troubleshooting
 
-Memory Sentry supports Windows 10 and Windows 11 desktop editions only. These steps apply to the Rust preview.
+Memory Sentry supports Windows 10 and Windows 11 desktop editions only. These steps apply to the experimental Rust companion.
 
-## Marketplace shows "companion not connected"
+## Dashboard shows "connection unavailable"
 
-Marketplace installs the dashboard only. Download the official Memory Sentry Setup executable from https://github.com/yanlvl99/spicetify-memory-sentry/releases, verify its SHA-256 file, close Spotify, run Setup as your normal user, then reopen Spotify.
+The installer launches the companion automatically and waits for its authenticated local API to respond. The dashboard displays an HTTP/API error where available. For failures that happen before the API starts, inspect:
+
+\`%LOCALAPPDATA%\\SpicetifyMemorySentry\\logs\\startup.log\`
+
+For runtime events after the API starts, inspect \`helper.log\` in the same \`logs\` folder. These logs stay on the PC and are not uploaded. If the startup log says the API port is already in use, close the other program using port 38472 and launch Memory Sentry again.
+
+Marketplace installs the dashboard only. Download the official Memory Sentry Setup executable from https://github.com/yanlvl99/spicetify-memory-sentry/releases and verify its SHA-256 file. Check the diagnostic before repeatedly reinstalling.
 
 ## Setup says Spotify is running
 
@@ -34,6 +40,6 @@ A new unsigned executable can show a warning even when its source is open. Verif
 
 After uninstall, diagnostic logs that existed are copied to:
 
-%LOCALAPPDATA%\MemorySentry\logs
+%LOCALAPPDATA%\\MemorySentry\\logs
 
 The helper does not upload logs or metrics. Review the logs for personal file paths before attaching them to a public issue.
