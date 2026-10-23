@@ -84,6 +84,6 @@
   <text x="831" y="546" fill="#ced8dc" font-family="Segoe UI,Arial,sans-serif" font-size="9">Spotify subprocesses</text><text x="1060" y="546" fill="#ced8dc" font-family="Segoe UI,Arial,sans-serif" font-size="9">8.6 MB · 7.5 MB</text>
   <text x="831" y="564" fill="#ced8dc" font-family="Segoe UI,Arial,sans-serif" font-size="9">Additional processes</text><text x="1060" y="564" fill="#ced8dc" font-family="Segoe UI,Arial,sans-serif" font-size="9">3.8 MB · 1.2 MB</text>
 </g>
-<text x="804" y="617" fill="#b5c7c8" font-family="Segoe UI,Arial,sans-serif" font-size="11">Different user captures · not a controlled before/after test</text>
+<text x="804" y="617" fill="#b5c7c8" font-family="Segoe UI,Arial,sans-serif" font-size="11">Different user captures · not a before/after claim</text>
 <text x="804" y="638" fill="#64e9a9" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">Open source · local-only · experimental</text>
 </svg>
