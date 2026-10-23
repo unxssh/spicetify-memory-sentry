@@ -24,7 +24,7 @@ The OS check must be run on a Windows 10/11 desktop edition. GitHub-hosted Windo
 
 ## Build the setup program
 
-The GitHub Actions workflow creates dist/stage, copies the compiled executable, Custom App and required documentation into it, then compiles installer/inno/MemorySentry.iss using Inno Setup 6. It uploads the Setup EXE, source/package ZIP and SHA-256 checksums as workflow artifacts. A release tag publishes those artifacts as a GitHub release.
+The scripts/build-package.ps1 script creates dist/stage, copies the compiled executable, Custom App and required documentation into it, then compiles installer/inno/MemorySentry.iss using Inno Setup 6. It uploads the Setup EXE, source/package ZIP and SHA-256 checksums as workflow artifacts. A release tag publishes those artifacts as a GitHub release.
 
 Do not put built EXEs, Setup programs, ZIP files, Git bundles, local publishing scripts, checksums, secrets or local logs into source commits.
 

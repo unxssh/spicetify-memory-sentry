@@ -41,7 +41,7 @@ check('privacy explicitly states no uploads', /No information is uploaded/i.test
 check('security notes never disable antivirus', /does not disable antivirus/i.test(read('SECURITY.md')));
 check('Marketplace preview exists', fs.existsSync(path.join(root, marketplaceManifest.preview)));
 check('release action publishes setup, package ZIP and SHA-256', /MemorySentrySetup/.test(read('.github/workflows/release.yml')) && /MemorySentry-.*windows-x64/.test(read('.github/workflows/release.yml')) && /action-gh-release/i.test(read('.github/workflows/release.yml')));
-check('source package includes native Rust files', /"native"/.test(buildScript) && /native/.test(read('.github/workflows/release.yml')));
+check('source package includes native Rust files', /"native"/.test(read('scripts/build-package.ps1')) && /native/.test(read('.github/workflows/release.yml')));
 
 const app = read('app/index.js');
 const helper = read('helper/helper.js');
