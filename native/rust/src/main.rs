@@ -9,6 +9,22 @@ mod platform;
 #[cfg(windows)]
 mod runtime;
 
+#[cfg(windows)]
+fn log_setup_failure(error: &str) {
+    use std::fs::OpenOptions;
+    use std::io::Write as _;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let Some(local) = std::env::var_os("LOCALAPPDATA") else { return; };
+    let log_dir = std::path::PathBuf::from(local)
+        .join("SpicetifyMemorySentry")
+        .join("logs");
+    if std::fs::create_dir_all(&log_dir).is_err() { return; }
+    let Ok(mut file) = OpenOptions::new().create(true).append(true).open(log_dir.join("setup.log")) else { return; };
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
+    let _ = writeln!(file, "[{timestamp}] [SETUP] {error}");
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
 
@@ -33,6 +49,7 @@ fn main() {
         let result = match args.as_slice() {
             [command] if command == "--check-os" => runtime::check_supported_os(),
             [command] if command == "--check-install" => runtime::check_install_prerequisites(),
+            [command] if command == "--check-spicetify" => runtime::check_spicetify_cli(),
             [command] if command == "--prepare-upgrade" => runtime::prepare_upgrade(),
             [] => runtime::run_monitor(),
             [command] if command == "--monitor" => runtime::run_monitor(),
@@ -40,9 +57,12 @@ fn main() {
             [command] if command == "--pre-uninstall" => runtime::pre_uninstall(),
             [command] if command == "--restore-limits" => runtime::restore_limits_command(),
             [command, app_dir] if command == "--configure" => runtime::configure_install(app_dir),
-            _ => Err("Unknown arguments. Supported commands: --version, --self-test, --check-os, --check-install, --monitor, --launch, --prepare-upgrade, --configure <custom-app-folder>, --pre-uninstall, --restore-limits.".to_string()),
+            _ => Err("Unknown arguments. Supported commands: --version, --self-test, --check-os, --check-install, --check-spicetify, --monitor, --launch, --prepare-upgrade, --configure <custom-app-folder>, --pre-uninstall, --restore-limits.".to_string()),
         };
         if let Err(error) = result {
+            if args.first().map(String::as_str) == Some("--configure") {
+                log_setup_failure(&error);
+            }
             eprintln!("Memory Sentry: {error}");
             std::process::exit(1);
         }

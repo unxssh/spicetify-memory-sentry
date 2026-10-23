@@ -3,6 +3,7 @@
 
 use std::ffi::c_void;
 use std::io;
+use std::path::Path;
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -81,6 +82,7 @@ extern "system" {
     fn CreateMutexW(attributes: *mut c_void, initial_owner: i32, name: *const u16) -> Handle;
     fn ReleaseMutex(handle: Handle) -> i32;
     fn GetExitCodeProcess(process: Handle, exit_code: *mut u32) -> i32;
+    fn QueryFullProcessImageNameW(process: Handle, flags: u32, exe_name: *mut u16, size: *mut u32) -> i32;
 }
 
 #[link(name = "psapi")]
@@ -500,6 +502,22 @@ pub fn process_exists(pid: u32) -> bool {
     let alive = unsafe { GetExitCodeProcess(handle, &mut code) } != 0 && code == 259;
     unsafe { CloseHandle(handle); }
     alive
+}
+
+pub fn process_matches_executable(pid: u32, expected_path: &Path) -> bool {
+    let Ok(handle) = open_process(pid, 0x1000) else { return false; };
+    let mut buffer = vec![0u16; 32_768];
+    let mut length = buffer.len() as u32;
+    let queried = unsafe {
+        QueryFullProcessImageNameW(handle, 0, buffer.as_mut_ptr(), &mut length)
+    } != 0;
+    unsafe { CloseHandle(handle); }
+    if !queried || length == 0 || length as usize > buffer.len() { return false; }
+
+    let actual = String::from_utf16_lossy(&buffer[..length as usize]);
+    let expected = expected_path.canonicalize().unwrap_or_else(|_| expected_path.to_path_buf());
+    let normalize = |value: &str| value.replace('/', "\\").trim_start_matches(r"\\?\").to_ascii_lowercase();
+    normalize(&actual) == normalize(&expected.to_string_lossy())
 }
 
 pub struct SingleInstanceGuard {

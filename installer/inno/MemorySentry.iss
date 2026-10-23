@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.3.3"
+  #define AppVersion "0.3.4"
 #endif
 #ifndef StageDir
   #define StageDir "..\..\dist\stage"
@@ -28,13 +28,13 @@ OutputDir=..\..\dist
 OutputBaseFilename=MemorySentrySetup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
-CloseApplications=yes
+CloseApplications=no
 RestartApplications=no
 UsePreviousLanguage=yes
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=no
 SetupLogging=yes
-VersionInfoVersion=0.3.3.0
+VersionInfoVersion=0.3.4.0
 Uninstallable=yes
 
 [Languages]
@@ -44,8 +44,10 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 [CustomMessages]
 english.OSCheckFailed=Memory Sentry supports Windows 10 and Windows 11 desktop editions only. No files were changed.
 brazilianportuguese.OSCheckFailed=O Memory Sentry é compatível apenas com as edições desktop do Windows 10 e do Windows 11. Nenhum arquivo foi alterado.
-english.InstallCheckFailed=Setup could not verify all prerequisites. Close Spotify completely and confirm that Spicetify CLI is installed, then run Setup again. No program files have been replaced.
-brazilianportuguese.InstallCheckFailed=O instalador não conseguiu confirmar todos os requisitos. Feche o Spotify completamente e confirme que o Spicetify CLI está instalado; depois execute o instalador novamente. Nenhum arquivo do programa foi substituído.
+english.InstallCheckFailed=Setup could not verify all prerequisites. Read the diagnostic shown by Setup and try again. No program files have been replaced.
+brazilianportuguese.InstallCheckFailed=O instalador não conseguiu confirmar todos os requisitos. Leia o diagnóstico exibido pelo instalador e tente novamente. Nenhum arquivo do programa foi substituído.
+english.SpicetifyMissing=Spicetify CLI was not found for this Windows user. Install Spicetify, reopen Setup, and try again. No program files have been replaced.
+brazilianportuguese.SpicetifyMissing=O Spicetify CLI não foi encontrado para este usuário do Windows. Instale o Spicetify, abra o instalador novamente e tente de novo. Nenhum arquivo do programa foi substituído.
 english.UpgradeCheckFailed=The previous companion did not confirm that its recovery state was safe. Setup has stopped; the existing files and recovery data were preserved.
 brazilianportuguese.UpgradeCheckFailed=O auxiliar anterior não confirmou que a recuperação estava segura. A instalação foi interrompida; os arquivos existentes e os dados de recuperação foram preservados.
 english.ConfigureFailed=Files were copied, but Memory Sentry could not register its Custom App. Setup tried to roll back the Custom App if recovery completed. Review the setup output and rerun Setup to repair the installation.
@@ -102,6 +104,20 @@ begin
   Result := Exec(ExpandConstant('{app}\MemorySentry.exe'), Params, '', SW_HIDE, ewWaitUntilTerminated, Code);
 end;
 
+function SetupFailureDetails(): String;
+var
+  LogText: String;
+  LogFile: String;
+begin
+  Result := '';
+  LogFile := ExpandConstant('{localappdata}\SpicetifyMemorySentry\logs\setup.log');
+  if FileExists(LogFile) and LoadStringFromFile(LogFile, LogText) then begin
+    if Length(LogText) > 1800 then
+      LogText := Copy(LogText, Length(LogText) - 1799, 1800);
+    Result := Trim(LogText);
+  end;
+end;
+
 function InitializeSetup(): Boolean;
 var
   Code: Integer;
@@ -125,6 +141,14 @@ var
   Code: Integer;
 begin
   Result := '';
+  if not RunBundledCompanion('--check-spicetify', Code) then begin
+    Result := CustomMessage('InstallCheckFailed');
+    Exit;
+  end;
+  if Code <> 0 then begin
+    Result := CustomMessage('SpicetifyMissing');
+    Exit;
+  end;
   if (not RunBundledCompanion('--check-install', Code)) or (Code <> 0) then begin
     Result := CustomMessage('InstallCheckFailed');
     Exit;
@@ -140,6 +164,7 @@ var
   Code: Integer;
   CleanupCode: Integer;
   AppTarget: String;
+  Diagnostic: String;
 begin
   if CurStep = ssPostInstall then begin
     AppTarget := ExpandConstant('{userappdata}\spicetify\CustomApps\SpicetifyMemorySentry');
@@ -147,8 +172,14 @@ begin
       // Only roll back the external Custom App if the helper confirms recovery/unregistration.
       if RunInstalledCompanion('--pre-uninstall', CleanupCode) and (CleanupCode = 0) then
         DelTree(AppTarget, True, True, True);
-      MsgBox(CustomMessage('ConfigureFailed'), mbError, MB_OK);
-      RaiseException(CustomMessage('ConfigureFailed'));
+      Diagnostic := SetupFailureDetails();
+      if Diagnostic <> '' then begin
+        MsgBox(CustomMessage('ConfigureFailed') + #13#10#13#10 + Diagnostic, mbError, MB_OK);
+        RaiseException(CustomMessage('ConfigureFailed') + #13#10 + Diagnostic);
+      end else begin
+        MsgBox(CustomMessage('ConfigureFailed'), mbError, MB_OK);
+        RaiseException(CustomMessage('ConfigureFailed'));
+      end;
     end;
   end;
 end;

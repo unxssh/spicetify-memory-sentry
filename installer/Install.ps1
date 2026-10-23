@@ -19,20 +19,15 @@ $SourceExe = Join-Path $PackageRoot 'MemorySentry.exe'
 $AppSource = Join-Path $PackageRoot 'app'
 $InstallDir = Join-Path $env:LOCALAPPDATA 'SpicetifyMemorySentry'
 $AppTarget = Join-Path (Join-Path (Join-Path $env:APPDATA 'spicetify') 'CustomApps') 'SpicetifyMemorySentry'
-$UseNewInstaller = $false
 
 Say '' ''
 Say 'Memory Sentry — per-user setup' 'Memory Sentry — instalação por usuário'
 Say 'Supported systems: Windows 10 and Windows 11 desktop editions.' 'Sistemas compatíveis: Windows 10 e Windows 11 (desktop).'
-Say 'No administrator access is requested. Close Spotify before continuing.' 'Não é necessário usar administrador. Feche o Spotify antes de continuar.'
+Say 'No administrator access is requested. Spicetify may restart Spotify automatically during setup.' 'Não é necessário usar administrador. O Spicetify pode reiniciar o Spotify automaticamente durante a instalação.'
 
 if (-not (Test-Path -LiteralPath $SourceExe -PathType Leaf) -or -not (Test-Path -LiteralPath $AppSource -PathType Container)) {
     throw 'This is not a complete release package. Download the official MemorySentrySetup.exe or release ZIP from https://github.com/yanlvl99/spicetify-memory-sentry/releases.'
 }
-if (Get-Process -Name Spotify -ErrorAction SilentlyContinue) {
-    throw 'Spotify is still running. Close all Spotify windows, confirm Spotify.exe exits, and run the installer again. No files were changed.'
-}
-
 $TransactionRoot = Join-Path $env:TEMP ('MemorySentry-Setup-' + [guid]::NewGuid().ToString('N'))
 $Stage = Join-Path $TransactionRoot 'stage'
 $PreviousInstall = Join-Path $TransactionRoot 'previous-install'
@@ -47,10 +42,14 @@ try {
     Copy-Item -LiteralPath $SourceExe -Destination (Join-Path $Stage 'MemorySentry.exe')
     Copy-Item -Path (Join-Path $AppSource '*') -Destination (Join-Path $Stage 'app') -Recurse -Force
 
-    # A preflight check runs from the staged executable and performs no memory changes.
+    # Give the user a precise prerequisite error before any installed files are moved.
+    & (Join-Path $Stage 'MemorySentry.exe') '--check-spicetify'
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Spicetify CLI was not found for this Windows user. Install Spicetify first, reopen the terminal/session if PATH changed, and retry. No installed files were replaced.'
+    }
     & (Join-Path $Stage 'MemorySentry.exe') '--check-install'
     if ($LASTEXITCODE -ne 0) {
-        throw 'Preflight failed. Close Spotify, confirm Spicetify CLI is installed, and run setup again. No files were replaced.'
+        throw 'Setup preflight failed. Read the diagnostic printed above. No installed files were replaced.'
     }
 
     # Recover old sessions before moving or replacing any installed files.

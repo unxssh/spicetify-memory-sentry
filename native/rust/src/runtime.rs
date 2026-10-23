@@ -18,7 +18,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "0.3.3";
+const VERSION: &str = "0.3.4";
 const DEFAULT_PORT: u16 = 38472;
 const DEFAULT_HIDDEN_DELAY_SECONDS: u64 = 2;
 const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
@@ -392,34 +392,47 @@ fn find_spicetify() -> Option<PathBuf> {
     None
 }
 
-fn configure_spicetify(app_name: &str) -> Result<(), String> {
+fn configure_spicetify(app_name: &str) -> Result<PathBuf, String> {
     let cli = find_spicetify().ok_or(
-        "Spicetify CLI was not found. Install Spicetify first, then rerun the Memory Sentry installer."
+        "Spicetify CLI was not found. Install Spicetify for the same Windows user that runs Spotify, then rerun Memory Sentry Setup."
     )?;
     let current = Command::new(&cli).args(["config", "custom_apps"]).output()
-        .map_err(|e| format!("Could not read Spicetify configuration: {e}"))?;
+        .map_err(|e| format!("Could not read Spicetify configuration using {}: {e}", cli.display()))?;
+    if !current.status.success() {
+        return Err(format!("Spicetify could not read its custom_apps configuration: {}", String::from_utf8_lossy(&current.stderr).trim()));
+    }
     let current_value = String::from_utf8_lossy(&current.stdout);
     let already_listed = current_value
         .split(|ch: char| ch == '|' || ch.is_whitespace() || ch == '=')
         .any(|item| item.eq_ignore_ascii_case(app_name));
     if !already_listed {
         let output = Command::new(&cli).args(["config", "custom_apps", app_name]).output()
-            .map_err(|e| format!("Could not register the Custom App: {e}"))?;
+            .map_err(|e| format!("Could not register the Custom App with Spicetify: {e}"))?;
         if !output.status.success() {
             return Err(format!("Spicetify could not register the Custom App: {}", String::from_utf8_lossy(&output.stderr).trim()));
         }
     }
-    let applied = Command::new(&cli).arg("apply").output()
-        .map_err(|e| format!("Could not run spicetify apply: {e}"))?;
+    Ok(cli)
+}
+
+fn apply_spicetify(cli: &Path) -> Result<(), String> {
+    let applied = Command::new(cli).arg("apply").output()
+        .map_err(|e| format!("Could not run spicetify apply using {}: {e}", cli.display()))?;
     if !applied.status.success() {
-        return Err(format!("Spicetify apply failed: {}", String::from_utf8_lossy(&applied.stderr).trim()));
+        return Err(format!("Spicetify apply failed (exit code {:?}): {}", applied.status.code(), String::from_utf8_lossy(&applied.stderr).trim()));
     }
     Ok(())
 }
 
+fn stop_monitor_after_setup_failure(context: &str) -> String {
+    match prepare_upgrade() {
+        Ok(()) => format!("{context}; the companion was stopped and working-set recovery was checked."),
+        Err(cleanup_error) => format!("{context}; automatic cleanup could not be fully confirmed: {cleanup_error}. Keep the recovery files and retry Setup."),
+    }
+}
+
 pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
     let (os_name, build) = platform::detect_supported_client_os()?;
-    ensure_spotify_closed()?;
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let base = exe.parent().ok_or("Could not determine installation directory")?.to_path_buf();
     let settings_path = base.join("settings.json");
@@ -464,13 +477,23 @@ pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
         hidden_delay_seconds: parse_json_number(&existing_raw, "hiddenDelaySeconds").unwrap_or(DEFAULT_HIDDEN_DELAY_SECONDS).clamp(1, 30),
     };
     write_settings(&settings_path, &settings)?;
-    configure_spicetify(APP_NAME)?;
-    register_startup(&exe)?;
+    // Start the local API before "spicetify apply" restarts Spotify, so the
+    // Custom App does not race native helper startup during its first render.
+    let cli = configure_spicetify(APP_NAME)?;
+    if let Err(error) = launch_monitor() {
+        return Err(stop_monitor_after_setup_failure(&format!("Could not start the companion before applying Spicetify: {error}")));
+    }
+    if let Err(error) = apply_spicetify(&cli) {
+        return Err(stop_monitor_after_setup_failure(&error));
+    }
+    if let Err(error) = register_startup(&exe) {
+        return Err(stop_monitor_after_setup_failure(&format!("Spicetify was applied, but current-user startup could not be registered: {error}")));
+    }
     cleanup_legacy_startup();
     println!("{APP_NAME} configured for {os_name} build {build}.");
     println!("Companion: {}", base.display());
     println!("Dashboard: {}", app_dir.display());
-    println!("Current-user startup is registered. No telemetry is uploaded.");
+    println!("Current-user startup is registered and the local API passed its health check. No telemetry is uploaded.");
     Ok(())
 }
 
@@ -482,19 +505,6 @@ fn find_node() -> Option<PathBuf> {
         }
     }
     None
-}
-
-fn ensure_spotify_closed() -> Result<(), String> {
-    let output = Command::new("powershell.exe")
-        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command",
-            "if (Get-Process -Name Spotify -ErrorAction SilentlyContinue) { exit 9 } else { exit 0 }"])
-        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).status()
-        .map_err(|e| format!("Could not check whether Spotify is running: {e}"))?;
-    match output.code() {
-        Some(0) => Ok(()),
-        Some(9) => Err("Close Spotify completely before installing, upgrading, or uninstalling Memory Sentry. No files were removed.".to_string()),
-        _ => Err("Could not reliably verify that Spotify is closed. Retry after closing Spotify; no files were removed.".to_string()),
-    }
 }
 
 fn register_startup(exe: &Path) -> Result<(), String> {
@@ -577,16 +587,17 @@ pub fn prepare_upgrade() -> Result<(), String> {
     }
 
     let pid_file = base.join("helper.pid");
+    let installed_exe = base.join("MemorySentry.exe");
     for _ in 0..50 {
         let active_pid = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok());
-        if active_pid.map(platform::process_exists).unwrap_or(false) {
+        if active_pid.map(|pid| platform::process_matches_executable(pid, &installed_exe)).unwrap_or(false) {
             thread::sleep(Duration::from_millis(100));
         } else {
             break;
         }
     }
     if let Some(pid) = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok()) {
-        if platform::process_exists(pid) {
+        if platform::process_matches_executable(pid, &installed_exe) {
             return Err(format!("Memory Sentry is still active (PID {pid}) after the shutdown request. The recovery data was preserved."));
         }
     }
@@ -650,13 +661,18 @@ pub fn check_supported_os() -> Result<(), String> {
     Ok(())
 }
 
+pub fn check_spicetify_cli() -> Result<(), String> {
+    let cli = find_spicetify().ok_or(
+        "Spicetify CLI was not found. Install Spicetify for the same Windows user that runs Spotify, then rerun Memory Sentry Setup."
+    )?;
+    println!("Spicetify CLI found at {}.", cli.display());
+    Ok(())
+}
+
 pub fn check_install_prerequisites() -> Result<(), String> {
     check_supported_os()?;
-    ensure_spotify_closed()?;
-    if find_spicetify().is_none() {
-        return Err("Spicetify CLI was not found. Install Spicetify first, then rerun Memory Sentry Setup.".to_string());
-    }
-    println!("Installation prerequisites passed. Spotify is closed and Spicetify CLI was found.");
+    check_spicetify_cli()?;
+    println!("Installation prerequisites passed. Spotify may restart automatically when Spicetify applies the Custom App.");
     Ok(())
 }
 
@@ -790,7 +806,10 @@ pub fn run_monitor() -> Result<(), String> {
     let _ = fs::write(&pid_file, platform::current_process_id().to_string());
 
     let shared = Arc::new(Mutex::new(state));
-    start_api(Arc::clone(&shared))?;
+    if let Err(error) = start_api(Arc::clone(&shared)) {
+        let _ = fs::remove_file(&pid_file);
+        return Err(error);
+    }
     let (tx, rx) = mpsc::channel::<Result<platform::Snapshot, String>>();
     thread::spawn(move || loop {
         let result = platform::powershell_snapshot();

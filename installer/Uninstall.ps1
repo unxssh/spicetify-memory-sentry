@@ -17,11 +17,7 @@ $StartupDir = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Star
 
 Say '' ''
 Say 'Memory Sentry — uninstaller' 'Memory Sentry — desinstalador'
-Say 'Close Spotify before uninstalling. Recovery failures intentionally stop removal.' 'Feche o Spotify antes de desinstalar. Falhas de recuperação interrompem a remoção.'
-
-if (Get-Process -Name Spotify -ErrorAction SilentlyContinue) {
-    throw 'Spotify is still running. Close Spotify completely and retry. No files were removed.'
-}
+Say 'Spicetify may restart Spotify while removing the Custom App. Recovery failures intentionally stop removal.' 'O Spicetify pode reiniciar o Spotify ao remover o Custom App. Falhas de recuperação interrompem a remoção.'
 
 if (Test-Path -LiteralPath $HelperPath -PathType Leaf) {
     & $HelperPath '--pre-uninstall'

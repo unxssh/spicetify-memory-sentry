@@ -18,13 +18,13 @@ The first command prints a direct error if the launcher cannot initialize; the s
 
 The uninstaller asks the native companion to restore the original Windows working-set limits and exit, removes its current-user startup registration, then removes the Custom App from Spicetify and runs \`spicetify apply\`. That lets Spicetify refresh Spotify as part of removing the app; you should not need to close Spotify manually for a normal uninstall. If the companion cannot confirm recovery or its process will not exit, uninstall stops and preserves the recovery files instead of deleting them.
 
-## Setup says Spotify is running
+## Spotify restart during setup
 
-For a new installation or upgrade, setup still requires Spotify to be closed while files are replaced. This check is separate from uninstall.
+Setup does not require Spotify to be manually closed. It prepares or shuts down the previous Memory Sentry helper, installs the Custom App files, starts the local API, and then calls `spicetify apply`; Spicetify may restart Spotify itself.
 
 ## Setup says Spicetify was not found
 
-Install Spicetify CLI for the same Windows user account that runs Spotify. Reopen your terminal/session so PATH changes apply, then retry Setup. Setup does not silently download and execute Spicetify on the user's behalf.
+Install Spicetify CLI for the same Windows user account that runs Spotify. Reopen Setup after installation. The installer reports this prerequisite before changing installed files and does not silently download or execute Spicetify on the user's behalf.
 
 ## Setup refuses a legacy migration
 

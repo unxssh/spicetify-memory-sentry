@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-## 0.3.3 — Early-launch diagnostics (experimental)
+## 0.3.4 — Installer diagnostics and startup ordering (experimental)
+
+- Remove the incorrect requirement to close Spotify manually; Spicetify apply handles its refresh/restart during install and uninstall.
+- Start and health-check the native local API before applying the Custom App, preventing the dashboard's initial render from racing helper startup.
+- Give missing Spicetify a dedicated preflight error and show native setup diagnostics in the Inno Setup failure dialog.
+- Log configure failures locally to setup.log, guard maintenance PID waits by checking the executable path, and remove stale helper.pid when the API cannot bind.
+- Retain recovery-first behavior and the experimental prerelease label.
 
 - Create `logs/startup.log` before reading settings, so missing or invalid configuration is diagnosed instead of exiting without a log.
 - Record launcher invocation, settings-load errors, monitor spawn failures, readiness timeouts, and successful API health checks locally.
