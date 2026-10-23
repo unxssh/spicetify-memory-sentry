@@ -12,7 +12,7 @@ const MSS_PT = MSS_LOCALE === 'pt-BR';
 
 const MSS_TEXT = {
   en: {
-    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · PREVIEW v0.3.0', title: 'Memory Sentry',
+    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · PREVIEW v0.3.3', title: 'Memory Sentry',
     intro: 'Adaptive memory management for Spotify Desktop. Supported operating systems: Windows 10 and Windows 11 only. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
     connected: 'Companion connected', unavailable: 'Connection unavailable', waiting: 'Waiting for companion',
     helperMissingTitle: 'Windows companion is not connected',
@@ -42,7 +42,7 @@ const MSS_TEXT = {
     window: { foreground: 'Spotify in foreground', 'background-visible': 'Spotify visible in background', minimized: 'Spotify minimized', hidden: 'Spotify window hidden', 'not-running': 'Spotify is not running', 'window-not-found': 'Spotify found; window not located', 'window-check-error': 'Window state unavailable', 'not-detected': 'Waiting for detection' }
   },
   pt: {
-    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · PREVIEW v0.3.0', title: 'Memory Sentry',
+    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · PREVIEW v0.3.3', title: 'Memory Sentry',
     intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Sistemas compatíveis: somente Windows 10 e Windows 11. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
     connected: 'Auxiliar conectado', unavailable: 'Conexão indisponível', waiting: 'Aguardando auxiliar',
     helperMissingTitle: 'O auxiliar do Windows não está conectado',

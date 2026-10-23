@@ -18,7 +18,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "0.3.2";
+const VERSION: &str = "0.3.3";
 const DEFAULT_PORT: u16 = 38472;
 const DEFAULT_HIDDEN_DELAY_SECONDS: u64 = 2;
 const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
@@ -1622,28 +1622,66 @@ fn request_status(port: u16, token: &str) -> Result<(), String> {
     Err(if detail.is_empty() { format!("Local API health check returned {status}") } else { format!("Local API health check returned {status}: {detail}") })
 }
 
+fn append_startup_log(path: &Path, message: &str) -> Result<(), String> {
+    let parent = path.parent().ok_or("Could not determine startup log directory")?;
+    fs::create_dir_all(parent)
+        .map_err(|error| format!("Could not create startup log directory {}: {error}", parent.display()))?;
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|error| format!("Could not open startup log {}: {error}", path.display()))?;
+    writeln!(file, "[{}] [LAUNCHER] {}", iso_now(), message)
+        .map_err(|error| format!("Could not write startup log {}: {error}", path.display()))?;
+    Ok(())
+}
+
 pub fn launch_monitor() -> Result<(), String> {
     let base = install_dir()?;
-    let settings = load_settings(&base.join("settings.json"))?;
+    let startup_path = base.join("logs").join("startup.log");
+
+    // Create and write the launch log before reading settings. This records failures
+    // such as a missing/corrupt settings file that occur before the detached monitor runs.
+    append_startup_log(&startup_path, "Launcher invoked.")?;
+
+    let settings_path = base.join("settings.json");
+    let settings = match load_settings(&settings_path) {
+        Ok(settings) => settings,
+        Err(error) => {
+            let detail = format!("Could not load companion settings at {}: {error}", settings_path.display());
+            let _ = append_startup_log(&startup_path, &detail);
+            return Err(format!("{detail}. Diagnostic log: {}", startup_path.display()));
+        }
+    };
 
     // The monitor might already be running after login or a previous launch attempt.
     if request_status(settings.port, &settings.token).is_ok() {
+        let _ = append_startup_log(&startup_path, "An existing companion passed the local API health check.");
         return Ok(());
     }
 
-    start_background_copy()?;
+    if let Err(error) = start_background_copy() {
+        let detail = format!("Could not start the detached monitor: {error}");
+        let _ = append_startup_log(&startup_path, &detail);
+        return Err(format!("{detail}. Diagnostic log: {}", startup_path.display()));
+    }
+    let _ = append_startup_log(&startup_path, "Detached monitor process spawned; waiting for the local API.");
+
     let mut last_error = String::from("The companion did not respond before the timeout.");
     for _ in 0..50 {
         match request_status(settings.port, &settings.token) {
-            Ok(()) => return Ok(()),
+            Ok(()) => {
+                let _ = append_startup_log(&startup_path, "Local API health check succeeded.");
+                return Ok(());
+            }
             Err(error) => last_error = error,
         }
         thread::sleep(Duration::from_millis(100));
     }
 
-    let startup_path = base.join("logs").join("startup.log");
+    let _ = append_startup_log(&startup_path, &format!("Readiness timeout. Last health-check error: {last_error}"));
     let startup_detail = fs::read_to_string(&startup_path).unwrap_or_default();
-    let startup_tail = startup_detail.lines().rev().take(8).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join(" | ");
+    let startup_tail = startup_detail.lines().rev().take(12).collect::<Vec<_>>().into_iter().rev().collect::<Vec<_>>().join(" | ");
     if startup_tail.is_empty() {
         Err(format!("Memory Sentry failed to become ready after 5 seconds: {last_error}. See {}", startup_path.display()))
     } else {

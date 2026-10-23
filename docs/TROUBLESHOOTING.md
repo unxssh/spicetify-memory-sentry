@@ -4,14 +4,16 @@ Memory Sentry supports Windows 10 and Windows 11 desktop editions only. These st
 
 ## Dashboard shows "connection unavailable"
 
-The dashboard now shows the detailed connection error. For failures that happen before the local API starts, inspect:
+The dashboard shows the detailed connection error. The launcher creates `%LOCALAPPDATA%\SpicetifyMemorySentry\logs\startup.log` before reading settings, so early configuration failures should now be recorded too.
 
-\`%LOCALAPPDATA%\\SpicetifyMemorySentry\\logs\\startup.log\`
+If the log is missing, open PowerShell and run:
 
-For runtime events after the API starts, inspect \`helper.log\` in the same \`logs\` folder. These logs stay on the PC and are not uploaded. A "port already in use" error means another process is listening on port 38472. An "Invalid local token" error indicates that the dashboard and companion were configured with different tokens; rerun the official installer to configure both together.
+```powershell
+& "$env:LOCALAPPDATA\SpicetifyMemorySentry\MemorySentry.exe" --launch
+Get-Content "$env:LOCALAPPDATA\SpicetifyMemorySentry\logs\startup.log" -Tail 40
+```
 
-Marketplace installs only the dashboard. The official setup executable is available at https://github.com/yanlvl99/spicetify-memory-sentry/releases. Check the diagnostic before repeatedly reinstalling.
-
+The first command prints a direct error if the launcher cannot initialize; the second shows local startup diagnostics if the file was created. If the executable itself is missing, repair the installation using the official setup executable. For runtime events after the API starts, inspect `helper.log` in the same `logs` folder. These logs stay on the PC and are not uploaded. A "port already in use" error means another process is listening on port 38472. An "Invalid local token" error indicates that the dashboard and companion were configured with different tokens; rerun the official installer to configure both together.
 ## Uninstall while Spotify is open
 
 The uninstaller asks the native companion to restore the original Windows working-set limits and exit, removes its current-user startup registration, then removes the Custom App from Spicetify and runs \`spicetify apply\`. That lets Spicetify refresh Spotify as part of removing the app; you should not need to close Spotify manually for a normal uninstall. If the companion cannot confirm recovery or its process will not exit, uninstall stops and preserves the recovery files instead of deleting them.

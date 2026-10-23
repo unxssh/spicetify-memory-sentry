@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.3.2"
+  #define AppVersion "0.3.3"
 #endif
 #ifndef StageDir
   #define StageDir "..\..\dist\stage"
@@ -34,7 +34,7 @@ UsePreviousLanguage=yes
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=no
 SetupLogging=yes
-VersionInfoVersion=0.3.2.0
+VersionInfoVersion=0.3.3.0
 Uninstallable=yes
 
 [Languages]

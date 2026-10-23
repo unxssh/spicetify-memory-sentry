@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.3 — Early-launch diagnostics (experimental)
+
+- Create `logs/startup.log` before reading settings, so missing or invalid configuration is diagnosed instead of exiting without a log.
+- Record launcher invocation, settings-load errors, monitor spawn failures, readiness timeouts, and successful API health checks locally.
+- Include the startup-log path when launcher initialization fails; keep the release experimental pending real Windows desktop validation.
+
 ## 0.3.2 — Connection diagnostics and non-blocking uninstall (experimental)
 
 - Render the actual dashboard API error instead of only the generic disconnected-state copy.

@@ -87,6 +87,8 @@ check('dashboard renders actual connection diagnostics', app.includes("`${tx('he
 check('Rust uninstall allows Spotify to remain open and restores first', !/pub fn pre_uninstall\(\) -> Result<(), String> \{\s*ensure_spotify_closed/.test(rustRuntime) && rustRuntime.indexOf('pub fn pre_uninstall()') < rustRuntime.indexOf('unregister_startup()?;') && rustRuntime.indexOf('unregister_startup()?;') < rustRuntime.indexOf('unregister_spicetify()?;'));
 check('single-instance mutex clears stale Win32 last-error state', rustPlatform.includes('SetLastError(0)'));
 check('Rust launcher records early startup failures and verifies API readiness', rustRuntime.includes('startup.log') && rustRuntime.includes('request_status(settings.port, &settings.token)') && rustRuntime.includes('failed to become ready after 5 seconds'));
+const launcherBody = rustRuntime.slice(rustRuntime.indexOf('pub fn launch_monitor()'));
+check('Rust launcher creates startup diagnostics before reading settings', launcherBody.indexOf('append_startup_log(&startup_path, "Launcher invoked.")') >= 0 && launcherBody.indexOf('append_startup_log(&startup_path, "Launcher invoked.")') < launcherBody.indexOf('load_settings(&settings_path)') && launcherBody.includes('Could not load companion settings'));
 check('installer always launches the companion after setup', setupScript.includes('Flags: runhidden') && !setupScript.includes('Flags: postinstall nowait skipifsilent runhidden'));
 check('installer avoids ExecutionPolicy Bypass', !/ExecutionPolicy\s+Bypass/i.test(read('Install.bat')) && !/ExecutionPolicy\s+Bypass/i.test(read('Uninstall.bat')));
 check('installer has no elevation request', !/RunAs|Verb\s+RunAs/i.test(installer));
