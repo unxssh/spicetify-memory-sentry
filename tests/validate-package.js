@@ -32,7 +32,7 @@ check('Marketplace description discloses separate helper', /native companion ins
 check('Marketplace listing explicitly limits support to Windows 10 and 11', /Windows 10 and Windows 11 only/i.test(marketplaceManifest.description));
 check('installer enforces Windows 10/11 support before modifications', /Win32_OperatingSystem/.test(read('installer/Install.ps1')) && /Windows 10/.test(read('installer/Install.ps1')) && /Windows 11/.test(read('installer/Install.ps1')));
 check('local publishing helper and generated archives are ignored', /\/PUSH-TO-GITHUB\.bat/.test(read('.gitignore')) && /\*\.bundle/.test(read('.gitignore')) && /\*\.zip/.test(read('.gitignore')));
-check('development guide documents local checks and direct authenticated publishing', /node tests\/validate-package\.js/.test(read('docs/DEVELOPMENT.md')) && /git push -u origin main/.test(read('docs/DEVELOPMENT.md')) && !/Run\s+`PUSH-TO-GITHUB\.bat`/i.test(read('docs/DEVELOPMENT.md')));
+check('development guide documents local checks and direct authenticated publishing', /node tests\/validate-package\.js/.test(read('docs/DEVELOPMENT.md')) && /push through your authenticated Git client/i.test(read('docs/DEVELOPMENT.md')) && !/Run\s+`PUSH-TO-GITHUB\.bat`/i.test(read('docs/DEVELOPMENT.md')));
 check('README explains native companion requirement', /separate companion process/i.test(read('README.md')));
 check('README documents adaptive CPU and headroom rules', /six seconds/i.test(read('README.md')) && /ten seconds/i.test(read('README.md')));
 check('README documents unsigned SmartScreen limitations', /No unsigned first release can guarantee zero SmartScreen/i.test(read('README.md')));
