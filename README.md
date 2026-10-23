@@ -1,5 +1,7 @@
 # Memory Sentry for Spotify Desktop
 
+![Memory Sentry Marketplace banner](assets/marketplace-banner.svg)
+
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
 > **0.3.4 experimental release — use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. CI build and policy tests pass, but the full real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains incomplete; do not treat this build as stable.

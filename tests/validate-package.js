@@ -15,7 +15,7 @@ const requiredFiles = [
   'app/index.js', 'app/manifest.json', 'helper/helper.js', 'helper/adaptive-policy.js',
   'helper/package.json', 'installer/Install.ps1', 'installer/Uninstall.ps1', 'Install.bat',
   'Uninstall.bat', '.gitignore', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
-  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'docs/TROUBLESHOOTING.md', 'installer/inno/MemorySentry.iss', 'scripts/build-package.ps1', 'native/rust/src/main.rs', 'native/rust/src/lib.rs', 'native/rust/src/runtime.rs', 'native/rust/src/platform/windows.rs', 'preview.png',
+  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'docs/TROUBLESHOOTING.md', 'installer/inno/MemorySentry.iss', 'scripts/build-package.ps1', 'native/rust/src/main.rs', 'native/rust/src/lib.rs', 'native/rust/src/runtime.rs', 'native/rust/src/platform/windows.rs', 'preview.png', 'assets/marketplace-preview.svg', 'assets/marketplace-banner.svg',
   '.github/workflows/validate.yml', '.github/workflows/release.yml'
 ];
 for (const file of requiredFiles) check(`exists: ${file}`, fs.existsSync(path.join(root, file)));
@@ -27,7 +27,10 @@ try { appManifest = JSON.parse(read('app/manifest.json')); } catch (_) { check('
 try { marketplaceManifest = JSON.parse(read('manifest.json')); } catch (_) { check('Marketplace manifest JSON', false); }
 try { packageJson = JSON.parse(read('helper/package.json')); } catch (_) { check('helper package JSON', false); }
 check('Spicetify Custom App manifest is valid', Boolean(appManifest.name && appManifest.icon && appManifest['active-icon']));
-check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'preview.png' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
+check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'assets/marketplace-preview.svg' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
+check('Marketplace metadata has useful discovery tags and author attribution', Array.isArray(marketplaceManifest.tags) && ['spotify', 'performance', 'memory', 'windows'].every(tag => marketplaceManifest.tags.includes(tag)) && marketplaceManifest.authors?.some(author => author.url === 'https://github.com/yanlvl99'));
+check('Marketplace preview and banner are valid SVG assets', /^<svg\s/.test(read('assets/marketplace-preview.svg')) && /viewBox="0 0 1200 675"/.test(read('assets/marketplace-preview.svg')) && /^<svg\s/.test(read('assets/marketplace-banner.svg')) && /viewBox="0 0 1500 500"/.test(read('assets/marketplace-banner.svg')));
+check('Marketplace visual does not misrepresent screenshots as before-and-after results', /not a before\/after claim/i.test(read('assets/marketplace-preview.svg')) && /not a before\/after claim/i.test(read('assets/marketplace-banner.svg')));
 check('Marketplace description discloses separate helper', /native companion installer/i.test(marketplaceManifest.description));
 check('Marketplace listing explicitly limits support to Windows 10 and 11', /Windows 10 and Windows 11 only/i.test(marketplaceManifest.description));
 check('installer enforces Windows 10/11 support before modifications', /Win32_OperatingSystem/.test(read('installer/Install.ps1')) && /Windows 10/.test(read('installer/Install.ps1')) && /Windows 11/.test(read('installer/Install.ps1')));

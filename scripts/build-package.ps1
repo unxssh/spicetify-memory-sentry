@@ -53,7 +53,7 @@ foreach ($name in @(
 )) {
     Copy-Item -LiteralPath (Join-Path $Root $name) -Destination $Portable -Force
 }
-foreach ($directory in @("app", "helper", "installer", "docs", "tests", "scripts", ".github")) {
+foreach ($directory in @("app", "helper", "installer", "docs", "tests", "scripts", ".github", "assets")) {
     $destination = Join-Path $Portable $directory
     New-Item -ItemType Directory -Path $destination -Force | Out-Null
     Copy-Item -Path (Join-Path $Root ($directory + "\*")) -Destination $destination -Recurse -Force
