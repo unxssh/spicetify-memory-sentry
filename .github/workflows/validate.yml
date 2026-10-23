@@ -53,11 +53,14 @@ jobs:
         run: choco install innosetup --yes --no-progress
       - name: Build per-user Setup EXE and portable package
         shell: pwsh
-        run: .\scripts\build-package.ps1 -Version "0.3.0-pre.2"
-      - name: Upload preview installer and package
+        run: |
+          $cargo = Get-Content native/rust/Cargo.toml -Raw
+          if ($cargo -notmatch '(?m)^version\s*=\s*"([^"]+)"') { throw "Could not read Cargo version." }
+          .\scripts\build-package.ps1 -Version $Matches[1]
+      - name: Upload validation installer and package
         uses: actions/upload-artifact@v4
         with:
-          name: MemorySentry-preview
+          name: MemorySentry-validation-build
           if-no-files-found: error
           path: |
             dist/MemorySentrySetup-*.exe

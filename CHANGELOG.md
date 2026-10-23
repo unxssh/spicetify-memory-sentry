@@ -2,14 +2,14 @@
 
 ## Unreleased
 
-- Add an Inno Setup per-user installer and matching uninstall/recovery workflow for the native Rust companion.
-- Build the setup executable and portable Windows x64 package in CI, with SHA-256 checksums.
-- Remove the Node.js requirement for new installs while retaining explicit legacy Node recovery.
-- Clarify Windows 10/11-only support and both standalone/Marketplace install paths.
-- Clarify standalone and Marketplace install paths, supported Windows versions, and native companion requirements.
-- Add the first Rust migration scaffold and dedicated cross-platform policy tests.
+## 0.3.0 — Native Windows companion (experimental)
 
-
+- Add a native Rust companion and per-user Inno Setup installer for Windows 10/11 x64.
+- Add guarded install, upgrade, recovery and uninstall flows that preserve recovery data if limits cannot be restored safely.
+- Build a Windows Setup EXE and portable x64 ZIP with SHA-256 checksums in GitHub Actions.
+- Keep adaptive per-process working-set policy, audio-service exclusions, loopback-only dashboard API and no-telemetry behavior.
+- Align native runtime and Cargo lockfile versions with 0.3.0, and derive validation package versions from Cargo metadata.
+- Publish as an experimental prerelease: the complete real-desktop Windows 10/11 behavior and restore-latency test matrix remains outstanding.
 
 ## 0.2.0 — Adaptive policy preview
 

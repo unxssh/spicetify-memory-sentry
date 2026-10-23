@@ -2,14 +2,14 @@
 
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
-> **Preview build — use cautiously.** Working-set limits can cause extra page faults and a short delay while Spotify's UI becomes responsive again. This project is not a substitute for Windows memory management, and it does not guarantee a particular RAM saving. Real Spotify/audio/restore testing on Windows 10 and 11 is still required before a stable release.
+> **0.3.0 experimental release — use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. CI build and policy tests pass, but the full real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains incomplete; do not treat this build as stable.
 
 ## Choose your installation path
 
 ### Path A — standalone installer (recommended)
 
 1. Open the [official GitHub Releases page](https://github.com/yanlvl99/spicetify-memory-sentry/releases).
-2. Download the Memory Sentry Setup executable and its SHA-256 checksum when the preview release is published.
+2. Download the Memory Sentry Setup executable and its SHA-256 checksum from the release assets.
 3. Verify the checksum before running the setup program.
 4. Close Spotify completely and run Setup as your normal Windows user. Do not run it as Administrator.
 5. Follow the installer prompts. It checks Windows and Spicetify, installs the native companion, registers the Custom App and configures current-user startup.
@@ -46,7 +46,7 @@ CPU is estimated from process-time deltas and expressed as a percentage of one l
 - The official setup program contains the Rust native companion. A global Node.js installation is not required for new installations.
 - When migrating a legacy Node.js installation with an outstanding recovery file, setup may request Node.js 22+ temporarily to run the old helper's restore command. If legacy recovery cannot be verified, setup stops and preserves the backup instead of deleting it.
 
-macOS, Linux, Windows 7/8/8.1, Windows Server and ARM64 Windows are not supported by this preview.
+macOS, Linux, Windows 7/8/8.1, Windows Server and ARM64 Windows are not supported by this release.
 
 ## Installed components and safety
 

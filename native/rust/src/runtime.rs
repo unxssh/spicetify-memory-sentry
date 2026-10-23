@@ -18,7 +18,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "0.3.0-pre.2";
+const VERSION: &str = "0.3.0";
 const DEFAULT_PORT: u16 = 38472;
 const DEFAULT_HIDDEN_DELAY_SECONDS: u64 = 2;
 const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
