@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Clarify that the supported release requires Spotify Desktop and Spicetify CLI, distinguish the Spicetify Custom App from the native Rust companion, and add dynamic release/version/download/CI/license badges to the README.
+
 - Convert the README's privacy, security, installation, troubleshooting and migration references into working relative Markdown links; fix the development guide's same-directory documentation links.
 
 - Clarify that substantial resident-memory reduction while Spotify is minimized/hidden is the intended behavior across supported Windows 10/11 x64 desktop PCs, while actual savings vary by machine and workload.

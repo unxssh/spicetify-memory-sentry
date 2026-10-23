@@ -1,6 +1,6 @@
 {
   "name": "Memory Sentry",
-  "description": "Windows 10 and Windows 11 only. Adaptive Spotify memory dashboard; the official native companion installer from GitHub Releases is required. Marketplace is discovery only; no telemetry.",
+  "description": "Windows 10 and Windows 11 only. Requires Spotify Desktop and Spicetify CLI; dashboard is a Spicetify Custom App. The native companion installer from GitHub Releases is required. Marketplace is discovery only; no telemetry.",
   "preview": "assets/marketplace-preview-sharp.svg",
   "readme": "README.md",
   "authors": [

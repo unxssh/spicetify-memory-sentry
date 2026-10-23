@@ -1,10 +1,10 @@
 # Marketplace publishing and support model
 
-Memory Sentry supports Windows 10 and Windows 11 desktop editions only (x64 desktop). The project remains experimental; Marketplace discoverability must not be represented as a stable-product endorsement.
+Memory Sentry supports Windows 10 and Windows 11 desktop editions only (x64 desktop) and currently requires Spotify Desktop plus Spicetify CLI for the same Windows user. The interface is a Spicetify Custom App; the native Rust companion performs the Windows memory-management work. A standalone no-Spicetify mode is a possible future adaptation, not a feature of this release. The project remains experimental; Marketplace discoverability must not be represented as a stable-product endorsement.
 
 ## Installation and distribution model
 
-### Standalone setup
+### Official Windows setup installer
 
 The official per-user setup program and SHA-256 checksums are published on:
 
