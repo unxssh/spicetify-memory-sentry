@@ -43,7 +43,7 @@ jobs:
       - name: Verify safe binary commands
         shell: pwsh
         run: |
-          $binary = "target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe"
+          $binary = Join-Path $env:GITHUB_WORKSPACE "target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe"
           & $binary --version
           if ($LASTEXITCODE -ne 0) { throw "The companion version command failed." }
           & $binary --self-test
