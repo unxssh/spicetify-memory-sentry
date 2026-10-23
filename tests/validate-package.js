@@ -15,7 +15,7 @@ const requiredFiles = [
   'app/index.js', 'app/manifest.json', 'helper/helper.js', 'helper/adaptive-policy.js',
   'helper/package.json', 'installer/Install.ps1', 'installer/Uninstall.ps1', 'Install.bat',
   'Uninstall.bat', '.gitignore', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
-  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'preview.png',
+  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'native/rust/src/runtime.rs', 'native/rust/src/platform/windows.rs', 'preview.png',
   '.github/workflows/validate.yml', '.github/workflows/release.yml'
 ];
 for (const file of requiredFiles) check(`exists: ${file}`, fs.existsSync(path.join(root, file)));
@@ -51,6 +51,8 @@ const validation = read('.github/workflows/validate.yml');
 const rustCargo = read('native/rust/Cargo.toml');
 const rustLib = read('native/rust/src/lib.rs');
 const rustMain = read('native/rust/src/main.rs');
+const rustRuntime = read('native/rust/src/runtime.rs');
+const rustPlatform = read('native/rust/src/platform/windows.rs');
 check('dashboard supports automatic Portuguese and English', /navigator\.language/i.test(app) && /pt-BR/i.test(app) && /Auto language: English/i.test(app));
 check('dashboard has a GitHub release button when helper is absent', /MSSOpenGitHub/i.test(app) && /github\.com\/yanlvl99\/spicetify-memory-sentry/i.test(app));
 check('dashboard links to Node.js if needed for the current beta', /MSSOpenNode/i.test(app) && /nodejs\.org\/en\/download/i.test(app));
@@ -83,7 +85,10 @@ check('package uses pinned Koffi and correct version', packageJson.version === '
 check('CI runs package validation', validation.includes('node tests/validate-package.js'));
 check('Rust scaffold uses a minimal standard-library dependency policy', rustCargo.includes('name = "memory-sentry-native"') && !rustCargo.includes('[dependencies]'));
 check('Rust policy has pure, testable adaptive logic', rustLib.includes('decide_adjustment') && rustLib.includes('#[cfg(test)]'));
-check('Rust binary explicitly refuses to act before feature parity', rustMain.includes('does not apply working-set limits yet') || rustMain.includes('not yet the active helper'));
+check('Rust binary exposes OS, upgrade, configure, monitor, and uninstall commands', ['--check-os', '--prepare-upgrade', '--configure', '--monitor', '--pre-uninstall', '--restore-limits'].every(command => rustMain.includes(command)));
+check('Rust runtime implements the local dashboard API and adaptive working-set flow', rustRuntime.includes('/api/status') && rustRuntime.includes('/api/config') && rustRuntime.includes('/api/action') && rustRuntime.includes('platform::set_working_set_limits') && rustRuntime.includes('restore_all'));
+check('Rust native layer protects process identity before each working-set mutation', rustPlatform.includes('set_working_set_limits') && rustPlatform.includes('creation != expected_creation') && rustPlatform.includes('restore_working_set_limits'));
+check('Rust startup and instance locking are per-user and single-instance', rustPlatform.includes('acquire_single_instance') && rustRuntime.includes('register_startup') && rustRuntime.includes('127.0.0.1'));
 
 // Exercise the pure adaptive policy without Windows APIs.
 check('main process starts with its role baseline', policy.baseCapMB('Main') === 36);
