@@ -1,6 +1,21 @@
+# Local-only publishing helper
+/PUSH-TO-GITHUB.bat
+
+# Generated archives and checksums
+*.bundle
+*.zip
+*.sha256
+*-tests.txt
+
+# Build output
+/dist/
+/build/
+/release/
+
+# Local runtime data
 node_modules/
 *.log
 *.tmp
-working-set-backup.json
-settings.json
 .env
+settings.json
+working-set-backup.json
