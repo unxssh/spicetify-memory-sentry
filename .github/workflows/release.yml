@@ -1,0 +1,33 @@
+name: Build release package
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate source and adaptive policy
+        run: node tests/validate-package.js
+      - name: Package source release and checksums
+        shell: bash
+        run: |
+          mkdir -p dist
+          zip -r "dist/MemorySentry-${GITHUB_REF_NAME}.zip" \
+            README.md LICENSE PRIVACY.md SECURITY.md CHANGELOG.md manifest.json preview.png \
+            Install.bat Uninstall.bat app helper installer docs tests .github
+          cd dist
+          sha256sum "MemorySentry-${GITHUB_REF_NAME}.zip" > "MemorySentry-${GITHUB_REF_NAME}.zip.sha256"
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/MemorySentry-${{ github.ref_name }}.zip
+            dist/MemorySentry-${{ github.ref_name }}.zip.sha256

@@ -1,0 +1,6 @@
+node_modules/
+*.log
+*.tmp
+working-set-backup.json
+settings.json
+.env

@@ -1,0 +1,15 @@
+name: Validate Memory Sentry
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate package and source syntax
+        run: node tests/validate-package.js
