@@ -88,6 +88,7 @@ check('Rust uninstall allows Spotify to remain open and restores first', !/pub f
 check('single-instance mutex clears stale Win32 last-error state', rustPlatform.includes('SetLastError(0)'));
 check('Rust launcher records early startup failures and verifies API readiness', rustRuntime.includes('startup.log') && rustRuntime.includes('request_status(settings.port, &settings.token)') && rustRuntime.includes('failed to become ready after 5 seconds'));
 check('Rust configure failures are logged for the installer dialog', rustMain.includes('log_setup_failure(&error)') && rustMain.includes('setup.log') && setupScript.includes('SetupFailureDetails()'));
+check('Inno Setup reads its ANSI diagnostic buffer with the required type', /LogText:\s*AnsiString/.test(setupScript) && /LoadStringFromFile\(LogFile, LogText\)/.test(setupScript));
 check('installer shows a dedicated missing-Spicetify prerequisite message', rustMain.includes('"--check-spicetify"') && setupScript.includes("RunBundledCompanion('--check-spicetify', Code)") && setupScript.includes('SpicetifyMissing'));
 check('install flow does not require Spotify to be manually closed', !/ensure_spotify_closed/.test(rustRuntime) && !/Get-Process -Name Spotify/.test(installer) && !/Get-Process -Name Spotify/.test(uninstaller) && /CloseApplications=no/.test(setupScript));
 const configureBody = rustRuntime.slice(rustRuntime.indexOf('pub fn configure_install('), rustRuntime.indexOf('fn find_node()'));

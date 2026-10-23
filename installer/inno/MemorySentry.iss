@@ -106,7 +106,7 @@ end;
 
 function SetupFailureDetails(): String;
 var
-  LogText: String;
+  LogText: AnsiString;
   LogFile: String;
 begin
   Result := '';
