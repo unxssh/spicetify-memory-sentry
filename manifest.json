@@ -1,6 +1,6 @@
 {
   "name": "Memory Sentry",
-  "description": "Experimental Windows 10/11 custom app for Spotify memory monitoring. The Marketplace installs the dashboard only; the separate native companion installer is required. No telemetry.",
+  "description": "Windows 10 and Windows 11 only. Experimental Spotify memory dashboard; the separate native companion installer is required. No telemetry.",
   "preview": "COM.png",
   "readme": "README.md",
   "authors": [
