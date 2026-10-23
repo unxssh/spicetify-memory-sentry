@@ -29,7 +29,7 @@ The Rust helper is the intended native companion for the preview installer. It u
 - [ ] Test on a real Windows 10 desktop with Spotify and Spicetify installed.
 - [ ] Test on a real Windows 11 desktop with Spotify and Spicetify installed.
 - [ ] Measure audio continuity, RAM reduction, UI restore latency, failed process operations, restart recovery and uninstall.
-- [ ] Verify the Marketplace missing-companion screen and both installation paths.
+- [ ] Verify the Marketplace discovery-only/missing-companion screen and the single official Setup EXE path.
 - [ ] Add the spicetify-apps topic and publish a release before submitting the listing for public discovery.
 
 ## Why the MSI is not the first installer

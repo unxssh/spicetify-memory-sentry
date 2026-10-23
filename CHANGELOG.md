@@ -2,11 +2,13 @@
 
 ## Unreleased
 
-- Apply restrained SVG edge sharpening to the exact `COM.png` and `SEM.png` captures in the Marketplace preview, README comparison, and banner. Original PNG files and their displayed values remain unchanged; no mock screenshots or generated metrics are used.
-- Replace generated mock Task Manager artwork with the two committed `COM.png` and `SEM.png` captures; use `COM.png` as the Marketplace preview.
-- Build the README banner only from those exact captures and state that results are illustrative rather than a controlled benchmark.
-- Remove the obsolete `preview.png` and `assets/marketplace-preview.svg`; include the real screenshots and banner in the portable package.
-- Update Marketplace metadata/tests to validate the real assets and document the required GitHub topic `spicetify-apps`.
+## 1.0.0-rc.1 — Release candidate and installation consolidation
+
+- Restore the Marketplace banner asset expected by package validation; keep all listing artwork derived from the supplied COM/SEM screenshots with restrained SVG sharpening only.
+- Fix the screenshot disclaimer required by validation, and retain explicit references to the original COM.png and SEM.png captures.
+- Consolidate supported distribution to one per-user Setup EXE and its SHA-256 checksum; remove the custom portable installer ZIP and redundant PowerShell/batch installation entry points.
+- Make Marketplace discovery-only in the README, dashboard and installation docs; the same official GitHub Setup is the only supported install method.
+- Align Cargo, runtime and Setup versions on 1.0.0-rc.1 and mark it as a prerelease pending the real-desktop Windows test matrix.
 
 ## 0.3.4 — Installer diagnostics and startup ordering (experimental)
 
@@ -15,6 +17,8 @@
 - Give missing Spicetify a dedicated preflight error and show native setup diagnostics in the Inno Setup failure dialog.
 - Log configure failures locally to setup.log, guard maintenance PID waits by checking the executable path, and remove stale helper.pid when the API cannot bind.
 - Retain recovery-first behavior and the experimental prerelease label.
+
+## 0.3.3 — Early-launch diagnostics (experimental)
 
 - Create `logs/startup.log` before reading settings, so missing or invalid configuration is diagnosed instead of exiting without a log.
 - Record launcher invocation, settings-load errors, monitor spawn failures, readiness timeouts, and successful API health checks locally.

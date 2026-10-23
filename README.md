@@ -2,30 +2,20 @@
 
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
-> **0.3.4 experimental release — use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. CI build and policy tests pass, but the full real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains incomplete; do not treat this build as stable.
+> **1.0.0-rc.1 release candidate — experimental; use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. Automated build and policy tests cannot replace the outstanding real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix; do not treat this candidate as stable.
 
-## Choose your installation path
-
-### Path A — standalone installer (recommended)
+## The only supported installation method
 
 1. Open the [official GitHub Releases page](https://github.com/yanlvl99/spicetify-memory-sentry/releases).
-2. Download the Memory Sentry Setup executable and its SHA-256 checksum from the release assets.
-3. Verify the checksum before running the setup program.
-4. Run Setup as your normal Windows user. Do not run it as Administrator; the installer checks for Spicetify before changing installed files.
-5. Follow the installer prompts. It installs the native companion, starts its local API before applying the Custom App, and configures current-user startup. Spicetify's apply operation may restart Spotify automatically.
-6. When Spotify returns, select Memory Sentry from the sidebar.
+2. Download **Memory Sentry Setup** and its `.sha256` checksum from the same release.
+3. Verify the checksum before running Setup. A checksum confirms file integrity, not the publisher's identity.
+4. Run Setup as your normal Windows user, not as Administrator. It checks Windows and Spicetify before changing installed files; you do not have to close Spotify manually.
+5. Setup installs the native companion, writes local settings/token, starts and health-checks the local API, then applies the Custom App through Spicetify. Spicetify may restart Spotify automatically.
+6. When Spotify returns, select Memory Sentry in the sidebar. The helper is also registered to start at login for the current Windows user.
 
-The Inno Setup installer is per-user and does not require a machine-wide MSI installation. A signed binary is not available yet, so Windows SmartScreen or antivirus may still show a reputation warning. A checksum verifies file integrity; it does not prove the publisher's identity.
+The Marketplace entry is for **discovery only** and points to the same official GitHub release. There is no separate Marketplace installer, Marketplace-specific build, or custom portable ZIP. GitHub's automatically generated source archive is for inspecting the source and is not an installation package.
 
-### Path B — Spicetify Marketplace
-
-1. Install the Custom App from Marketplace.
-2. Open it inside Spotify.
-3. If the companion is missing, the page explains that Marketplace installs the dashboard only and offers the official releases page and a setup guide.
-4. Download the complete official setup program and run it as your normal Windows user. Spicetify may restart Spotify during apply.
-5. When Spotify returns, select Memory Sentry from the sidebar. Use Refresh to confirm that the native companion connected.
-
-Installing only the Marketplace Custom App does not enable native memory optimization. A Custom App cannot silently install or execute an arbitrary Windows program, so the user deliberately downloads and runs the signed-off package.
+The Inno Setup installer is per-user and does not require a machine-wide MSI installation. The executable is not code-signed, so Windows SmartScreen or antivirus may still show a reputation warning. Do not bypass security warnings blindly.
 
 ## Task Manager comparison images
 
@@ -33,7 +23,7 @@ Installing only the Marketplace Custom App does not enable native memory optimiz
 | --- | --- |
 | ![Task Manager capture with Memory Sentry enabled](assets/COM-sharp.svg) | ![Task Manager capture without Memory Sentry](assets/SEM-sharp.svg) |
 
-These are the two supplied captures, not fabricated dashboard mockups. They illustrate the captured states only; they do not establish a repeatable performance benchmark or promise the same RAM reduction on another PC.
+The sharpened SVG previews use only the supplied COM.png and SEM.png captures; the original PNG files remain unchanged. These illustrations are not a controlled benchmark: they do not establish repeatable performance or promise the same RAM reduction on another PC.
 
 ## What the adaptive policy does
 
@@ -67,11 +57,11 @@ The companion runs as a separate per-user process under the current Windows user
 
 ## Upgrade and uninstall
 
-Setup and uninstall do not require you to close Spotify manually; Spicetify apply manages its own refresh/restart. Setup attempts to restore the old helper's limits before replacing it, stages new files, and the source/portable PowerShell installer rolls back its previous file set if registration fails. Windows Settings → Apps → Installed apps → Memory Sentry → Uninstall runs a pre-uninstall recovery check. If recovery fails or recovery records exist while the executable is missing, uninstallation stops and preserves data. Do not manually delete recovery files to bypass an error.
+Setup and uninstall do not require you to close Spotify manually; Spicetify apply manages its own refresh/restart. Setup attempts to restore the old helper's limits before replacing it and preserves recovery data if restoration cannot be confirmed. Windows Settings → Apps → Installed apps → Memory Sentry → Uninstall runs a pre-uninstall recovery check. If recovery fails or recovery records exist while the executable is missing, uninstallation stops and preserves data. Do not manually delete recovery files to bypass an error.
 
 ## Build from source
 
-Install the stable Rust toolchain and Inno Setup 6. From the repository root, run cargo test with manifest path native/rust/Cargo.toml and --locked, then cargo build --release for target x86_64-pc-windows-msvc. A complete setup also needs the Custom App and docs staged as described in installer/inno/MemorySentry.iss. GitHub Actions builds the setup program, source/package ZIP and SHA-256 files. CI compilation is not the same as an actual Spotify/audio/restore test on a Windows 10/11 desktop.
+Install the stable Rust toolchain and Inno Setup 6. From the repository root, run cargo test with manifest path native/rust/Cargo.toml and --locked, then cargo build --release for target x86_64-pc-windows-msvc. A complete setup also needs the Custom App and docs staged as described in installer/inno/MemorySentry.iss. GitHub Actions builds the single supported Setup EXE and its SHA-256 checksum. GitHub's automatically generated source archive is for source review, not an alternate installer. CI compilation is not the same as an actual Spotify/audio/restore test on a Windows 10/11 desktop.
 
 ## Open source, license and antivirus notices
 

@@ -12,12 +12,12 @@ const MSS_PT = MSS_LOCALE === 'pt-BR';
 
 const MSS_TEXT = {
   en: {
-    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · PREVIEW v0.3.4', title: 'Memory Sentry',
+    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · RELEASE CANDIDATE v1.0.0-rc.1', title: 'Memory Sentry',
     intro: 'Adaptive memory management for Spotify Desktop. Supported operating systems: Windows 10 and Windows 11 only. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
     connected: 'Companion connected', unavailable: 'Connection unavailable', waiting: 'Waiting for companion',
     helperMissingTitle: 'Windows companion is not connected',
-    helperMissingBody: 'The dashboard cannot reach the local Windows companion API. This can happen even when setup completed. The detailed connection error is shown below; check the local startup log if needed.',
-    helperButton: 'Download official setup', installGuideButton: 'Marketplace setup guide', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
+    helperMissingBody: 'The Marketplace listing is for discovery only. Use the official Setup from GitHub Releases to install or repair the native Windows companion. There is no separate Marketplace installer.',
+    helperButton: 'Download official setup', installGuideButton: 'Installation guide', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
     spotifyRam: 'Spotify resident memory', ramNote: '{count} Spotify processes detected. Summing working sets can double-count shared pages.',
     optimizedRam: 'Managed-process memory', managedNote: '{count} non-audio processes are currently eligible for optimization.',
     activeLimits: 'Adaptive limits active', activeNote: 'Per-process working-set ceilings managed automatically.',
@@ -42,12 +42,12 @@ const MSS_TEXT = {
     window: { foreground: 'Spotify in foreground', 'background-visible': 'Spotify visible in background', minimized: 'Spotify minimized', hidden: 'Spotify window hidden', 'not-running': 'Spotify is not running', 'window-not-found': 'Spotify found; window not located', 'window-check-error': 'Window state unavailable', 'not-detected': 'Waiting for detection' }
   },
   pt: {
-    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · PREVIEW v0.3.4', title: 'Memory Sentry',
+    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · RELEASE CANDIDATE v1.0.0-rc.1', title: 'Memory Sentry',
     intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Sistemas compatíveis: somente Windows 10 e Windows 11. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
     connected: 'Auxiliar conectado', unavailable: 'Conexão indisponível', waiting: 'Aguardando auxiliar',
     helperMissingTitle: 'O auxiliar do Windows não está conectado',
-    helperMissingBody: 'O painel não consegue acessar a API local do auxiliar do Windows. Isso também pode acontecer mesmo quando a instalação terminou. O erro detalhado aparece abaixo; consulte o log local de inicialização se necessário.',
-    helperButton: 'Baixar instalador oficial', installGuideButton: 'Guia de instalação do Marketplace', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
+    helperMissingBody: 'A listagem do Marketplace serve apenas para descoberta. Use o instalador oficial em GitHub Releases para instalar ou reparar o auxiliar nativo do Windows. Não existe um instalador separado do Marketplace.',
+    helperButton: 'Baixar instalador oficial', installGuideButton: 'Guia de instalação', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
     spotifyRam: 'Memória residente do Spotify', ramNote: '{count} processos do Spotify detectados. A soma dos working sets pode contar páginas compartilhadas mais de uma vez.',
     optimizedRam: 'Memória dos processos gerenciados', managedNote: '{count} processos sem relação com áudio estão elegíveis para otimização.',
     activeLimits: 'Limites adaptativos ativos', activeNote: 'Limites de working set por processo, administrados automaticamente.',

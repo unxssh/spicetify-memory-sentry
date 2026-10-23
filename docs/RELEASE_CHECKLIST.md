@@ -7,7 +7,7 @@ Do not call the release stable until all required real-desktop tests are complet
 - [ ] cargo test for native/rust/Cargo.toml passes.
 - [ ] Windows x64 build succeeds for x86_64-pc-windows-msvc.
 - [ ] Inno Setup compiles the per-user setup executable in CI.
-- [ ] Release ZIP, setup EXE and each SHA-256 file are uploaded and independently verified.
+- [ ] Only the official Setup EXE and its SHA-256 checksum are uploaded and independently verified.
 - [ ] Setup version, README and changelog agree.
 - [ ] Marketplace manifest and preview exist, root README is valid and repository topic spicetify-apps is set.
 - [ ] No Node.js requirement remains for new Rust installs. Any remaining Node dependency is clearly documented as legacy recovery only.
@@ -32,6 +32,6 @@ Do not call the release stable until all required real-desktop tests are complet
 
 - [ ] CI passes on the exact release commit.
 - [ ] Setup EXE and SHA-256 files are attached to the correct release.
-- [ ] Use a prerelease flag for preview tags (for example, v0.3.0-pre.2).
+- [ ] Mark v1.0.0-rc.1 as a prerelease; create stable v1.0.0 only after every required Windows 10/11 real-desktop test passes.
 - [ ] Never state the release has no antivirus warnings; the current executable is unsigned.
-- [ ] Submit to the Spicetify Marketplace only after the companion installer exists and both install paths have been tested.
+- [ ] Add the exact GitHub repository topic `spicetify-apps` manually, then submit the discovery listing; Marketplace is not an installer.
