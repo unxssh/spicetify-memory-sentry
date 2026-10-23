@@ -1,6 +1,6 @@
 # Memory Sentry Rust companion
 
-**Status: experimental.** The Windows x64 companion implements the local API, adaptive working-set policy, process-identity checks, audio-service exclusions, recovery persistence, and per-user startup/uninstall flow. The project is not considered stable until real Windows 10/11 desktop tests pass.
+**Status: experimental.** The Windows x64 companion implements the local API, adaptive working-set policy, process-identity checks, audio-service exclusions, recovery persistence, and per-user startup/uninstall flow. One reported hands-on setup retained playback and UI state without reloading; input occasionally took a few seconds to respond after restore. The project is not considered stable until the broader Windows 10/11 desktop test matrix passes.
 
 ## Build and test
 

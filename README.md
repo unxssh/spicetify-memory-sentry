@@ -2,7 +2,32 @@
 
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
-> **1.0.0-rc.1 release candidate — experimental; use cautiously.** Working-set limits can cause extra page faults and delay Spotify's UI recovery. This project is not a substitute for Windows memory management and does not guarantee a specific RAM saving. Automated build and policy tests cannot replace the outstanding real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix; do not treat this candidate as stable.
+## Preview: Task Manager with and without Memory Sentry
+
+<table>
+  <thead>
+    <tr>
+      <th width="50%">With Memory Sentry</th>
+      <th width="50%">Without Memory Sentry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><img src="assets/COM-sharp.svg" alt="Task Manager capture with Memory Sentry enabled" width="100%" /></td>
+      <td align="center"><img src="assets/SEM-sharp.svg" alt="Task Manager capture without Memory Sentry" width="100%" /></td>
+    </tr>
+  </tbody>
+</table>
+
+*These previews use the supplied `COM.png` and `SEM.png` captures with restrained SVG sharpening; the original PNG files remain unchanged. This is an illustrative comparison, not a controlled benchmark or a promise of the same RAM reduction on another PC.*
+
+## Observed memory and restore behavior
+
+In one reported setup, the combined Spotify working set dropped to about **40 MB during the initial trim** and later settled near **100 MB**. These are observed resident-working-set figures, not a fixed RAM cap, total committed-memory measurements, or a promise for other systems. Summed working sets can double-count shared pages.
+
+When the Spotify window became visible again, playback continued and the current interface view/state remained in place without a UI reload. Sometimes keyboard or mouse input took a few seconds to respond after the restore. Treat that as a restore-to-interaction delay, not as evidence that Spotify restarted. This report from one setup does not replace the Windows 10/11 compatibility and recovery test matrix.
+
+> **1.0.0-rc.1 release candidate — still experimental.** One reported hands-on setup showed uninterrupted playback and no Spotify UI reload or loss of the current view/state. After restoring the window, input sometimes took a few seconds to respond. The full Windows 10/11 release test matrix remains open, so this observation is not a guarantee across all PCs or a stable-release claim.
 
 ## The only supported installation method
 
@@ -16,14 +41,6 @@
 The Marketplace entry is for **discovery only** and points to the same official GitHub release. There is no separate Marketplace installer, Marketplace-specific build, or custom portable ZIP. GitHub's automatically generated source archive is for inspecting the source and is not an installation package.
 
 The Inno Setup installer is per-user and does not require a machine-wide MSI installation. The executable is not code-signed, so Windows SmartScreen or antivirus may still show a reputation warning. Do not bypass security warnings blindly.
-
-## Task Manager comparison images
-
-| With Memory Sentry | Without Memory Sentry |
-| --- | --- |
-| ![Task Manager capture with Memory Sentry enabled](assets/COM-sharp.svg) | ![Task Manager capture without Memory Sentry](assets/SEM-sharp.svg) |
-
-The sharpened SVG previews use only the supplied COM.png and SEM.png captures; the original PNG files remain unchanged. These illustrations are not a controlled benchmark: they do not establish repeatable performance or promise the same RAM reduction on another PC.
 
 ## What the adaptive policy does
 

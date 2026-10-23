@@ -2,7 +2,7 @@
 
 ## Current preview status
 
-The Rust source now contains an adaptive policy, Win32 process discovery and working-set calls, a loopback-only dashboard API, a per-install token, Windows 10/11 validation, legacy recovery hooks, per-user startup, and a recovery-aware uninstall command. It is wired for CI build testing, but it has not yet had end-to-end testing with a real Spotify installation on Windows 10 and 11.
+The Rust source now contains an adaptive policy, Win32 process discovery and working-set calls, a loopback-only dashboard API, a per-install token, Windows 10/11 validation, legacy recovery hooks, per-user startup, and a recovery-aware uninstall command. One reported hands-on setup observed uninterrupted playback, no UI reload or loss of the current view/state, and an occasional delay of a few seconds before input responded after restore. This is a single-environment report, not a completed Windows 10/11 release matrix; broader end-to-end checks for install, recovery, audio continuity, and restore-to-interaction latency remain required.
 
 The Rust helper is the intended native companion for the preview installer. It uses no third-party Rust crates in the current core, so there is no global Node.js/Koffi requirement for new installs. Legacy Node recovery is retained to help previous users restore old limits safely.
 
@@ -24,8 +24,8 @@ The Rust helper is the intended native companion for the preview installer. It u
 - [x] Add a Rust runtime implementation matching the dashboard API.
 - [x] Add setup/uninstall registration and legacy Node recovery workflow.
 - [x] Add CI policy tests and a Windows x64 compile/build job.
-- [ ] Verify Inno Setup compiles the per-user setup executable in CI.
-- [ ] Run the setup binary's safe CLI checks on the Windows runner and package the release artifacts.
+- [x] Verify Inno Setup compiles the per-user setup executable in CI.
+- [x] Run the native companion's safe `--version` and `--self-test` checks on the Windows runner and build the validation Setup EXE.
 - [ ] Test on a real Windows 10 desktop with Spotify and Spicetify installed.
 - [ ] Test on a real Windows 11 desktop with Spotify and Spicetify installed.
 - [ ] Measure audio continuity, RAM reduction, UI restore latency, failed process operations, restart recovery and uninstall.

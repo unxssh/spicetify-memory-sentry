@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Correct README, troubleshooting, benchmarking, migration, development-guide, and dashboard copy to describe the reported behavior: playback continued, the UI did not reload or lose its current state, and input could take a few seconds to respond after restoring the window.
+- Document the approximately 40 MB initial and 100 MB settled combined Spotify working-set figures as observations from one setup, not guaranteed memory targets.
+- Move the Task Manager comparison previews near the top of the README and expand the restore-to-interaction benchmark criteria.
+- Keep the broader Windows 10/11 release-validation checklist open; a single report does not establish compatibility across systems.
+
 ## 1.0.0-rc.1 — Release candidate and installation consolidation
 
 - Restore the Marketplace banner asset expected by package validation; keep all listing artwork derived from the supplied COM/SEM screenshots with restrained SVG sharpening only.

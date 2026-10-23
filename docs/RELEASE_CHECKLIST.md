@@ -23,7 +23,7 @@ Do not call the release stable until all required real-desktop tests are complet
 - [ ] Confirm limits are restored on focus return, disable, shutdown, restart recovery and uninstall.
 - [ ] Confirm an unresponsive recovery path leaves backups and blocks file removal.
 - [ ] Test legacy Node migration with and without Node.js 22+ and with successful and failed recovery.
-- [ ] Run at least five restore-to-interaction samples for the same workload and compare medians.
+- [ ] Run at least five restore-to-interaction samples for the same workload and compare medians; record playback continuity, whether the UI reloads, state/view preservation, and time until keyboard/mouse input is accepted.
 - [ ] Verify English/Portuguese UI language selection.
 - [ ] Verify no network telemetry is emitted by the helper.
 - [ ] Verify uninstall removes only the Memory Sentry Custom App and install directory while preserving logs outside the app folder.

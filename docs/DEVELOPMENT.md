@@ -17,8 +17,8 @@ From the repository root:
 
 For the resulting Windows binary, these commands do not apply working-set caps:
 
-    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --version
-    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --self-test
+    native\rust\target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --version
+    native\rust\target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --self-test
 
 The OS check must be run on a Windows 10/11 desktop edition. GitHub-hosted Windows runners are Windows Server, which is intentionally rejected by the product OS check.
 
@@ -30,7 +30,7 @@ Do not put built EXEs, Setup programs, ZIP files, Git bundles, local publishing 
 
 ## Architecture
 
-- app/index.js: Marketplace-installed Spicetify Custom App; automatic English/Brazilian Portuguese localization and missing-companion help.
+- app/index.js: Spicetify Custom App installed by the official per-user Setup EXE; automatic English/Brazilian Portuguese localization and missing-companion help.
 - native/rust/src/lib.rs: platform-independent adaptive policy and unit tests.
 - native/rust/src/platform/windows.rs: Win32 process/memory/window primitives, process identity checks, Windows version gate and per-user single-instance lock.
 - native/rust/src/runtime.rs: adaptive process monitor, recovery store, loopback API, configuration, logs, upgrade and uninstall actions.
