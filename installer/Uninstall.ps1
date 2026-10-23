@@ -1,79 +1,64 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 [CmdletBinding()]
 param()
+
 $ErrorActionPreference = 'Stop'
 $UsePortuguese = [System.Globalization.CultureInfo]::CurrentUICulture.Name -match '^pt(?:-|$)'
-function Get-LocalizedText([string]$English, [string]$Portuguese) {
-    if ($UsePortuguese) { return $Portuguese }
-    return $English
+function Say([string]$English, [string]$Portuguese) {
+    if ($UsePortuguese) { Write-Host $Portuguese } else { Write-Host $English }
 }
-$SpicetifyRoot = Join-Path $env:APPDATA 'spicetify'
-$AppName = 'SpicetifyMemorySentry'
-$AppTarget = Join-Path (Join-Path $SpicetifyRoot 'CustomApps') $AppName
-$LegacyExtension = Join-Path (Join-Path $SpicetifyRoot 'Extensions') 'SpicetifyMemorySentry.js'
+
 $InstallDir = Join-Path $env:LOCALAPPDATA 'SpicetifyMemorySentry'
+$HelperPath = Join-Path $InstallDir 'MemorySentry.exe'
+$AppTarget = Join-Path (Join-Path (Join-Path $env:APPDATA 'spicetify') 'CustomApps') 'SpicetifyMemorySentry'
+$BackupTsv = Join-Path $InstallDir 'working-set-backup.tsv'
+$BackupJson = Join-Path $InstallDir 'working-set-backup.json'
 $StartupDir = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup'
-$StartupVbs = Join-Path $StartupDir 'Spicetify Memory Sentry.vbs'
-$LegacyStartup = Join-Path $StartupDir 'Spicetify Memory Sentry.lnk'
 
-Write-Host ''
-Write-Host 'Memory Sentry — Uninstaller' -ForegroundColor Cyan
+Say '' ''
+Say 'Memory Sentry — uninstaller' 'Memory Sentry — desinstalador'
+Say 'Close Spotify before uninstalling. Recovery failures intentionally stop removal.' 'Feche o Spotify antes de desinstalar. Falhas de recuperação interrompem a remoção.'
 
-# Stop only the matching helper, never all Node.js processes.
-try {
-    Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
-        Where-Object { $_.CommandLine -and $_.CommandLine.Contains('SpicetifyMemorySentry') -and $_.CommandLine.Contains('helper.js') } |
-        ForEach-Object { try { Stop-Process -Id ([int]$_.ProcessId) -Force -ErrorAction SilentlyContinue } catch { } }
-} catch { }
-try {
-    Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -match '^(powershell|pwsh)\.exe$' -and $_.CommandLine -and $_.CommandLine.Contains('MemorySentry.Helper.ps1') } |
-        ForEach-Object { try { Stop-Process -Id ([int]$_.ProcessId) -Force -ErrorAction SilentlyContinue } catch { } }
-} catch { }
+if (Get-Process -Name Spotify -ErrorAction SilentlyContinue) {
+    throw 'Spotify is still running. Close Spotify completely and retry. No files were removed.'
+}
 
-# Restore native working-set limits before removing the helper and its recovery file.
-$HelperPath = Join-Path $InstallDir 'helper.js'
-$BackupFile = Join-Path $InstallDir 'working-set-backup.json'
-$NodeCommand = Get-Command node.exe -ErrorAction SilentlyContinue
-if (Test-Path -LiteralPath $BackupFile) {
-    if (-not $NodeCommand -or -not (Test-Path -LiteralPath $HelperPath)) {
-        throw (Get-LocalizedText 'Memory limits need restoration, but Node.js/helper.js were not found. Cleanup stopped to preserve the recovery file.' 'Há limites de memória para restaurar, mas Node.js/helper.js não foram encontrados. A limpeza foi interrompida para preservar o arquivo de recuperação.')
-    }
-    Write-Host (Get-LocalizedText 'Restoring original working-set limits for Spotify processes...' 'Restaurando os limites originais de working set dos processos Spotify...') -ForegroundColor Cyan
-    & $NodeCommand.Source $HelperPath '--restore-limits'
+if (Test-Path -LiteralPath $HelperPath -PathType Leaf) {
+    & $HelperPath '--pre-uninstall'
     if ($LASTEXITCODE -ne 0) {
-        throw (Get-LocalizedText 'Not all limits could be restored. Uninstall stopped to preserve the companion and backup; open Spotify, retry restoration, then run Uninstall.bat again.' 'Não foi possível restaurar todos os limites. A desinstalação foi interrompida para preservar o auxiliar e o backup; abra o Spotify, tente restaurar e rode Uninstall.bat novamente.')
+        throw 'Recovery or unregistering failed. The installer stopped and kept recovery data and program files.'
+    }
+}
+else {
+    # Legacy recovery fallback for older Node-based versions.
+    if (Test-Path -LiteralPath $BackupTsv -PathType Leaf) {
+        $records = @(Get-Content -LiteralPath $BackupTsv -ErrorAction Stop | Where-Object { $_.Trim() -and $_ -notmatch '^#' })
+        if ($records.Count -gt 0) {
+            throw 'Native recovery records exist but MemorySentry.exe is missing. Files were preserved; reinstall the matching version to recover safely.'
+        }
+    }
+    if (Test-Path -LiteralPath $BackupJson -PathType Leaf) {
+        $LegacyHelper = Join-Path $InstallDir 'helper.js'
+        $Node = Get-Command node.exe -ErrorAction SilentlyContinue
+        if (-not $Node -or -not (Test-Path -LiteralPath $LegacyHelper)) {
+            throw 'A legacy Node recovery backup exists but its helper or Node.js is missing. Files were preserved.'
+        }
+        & $Node.Source $LegacyHelper '--restore-limits'
+        if ($LASTEXITCODE -ne 0) { throw 'Legacy recovery failed. Files were preserved.' }
     }
 }
 
-$spicetify = Get-Command spicetify -ErrorAction SilentlyContinue
-if ($spicetify) {
-    try { & $spicetify.Source config custom_apps "$AppName-" | Out-Null } catch { }
-    try {
-        $existingExtensions = (& $spicetify.Source config extensions 2>$null | Out-String)
-        if ($existingExtensions -match '(?i)SpicetifyMemorySentry\.js') {
-            & $spicetify.Source config extensions 'SpicetifyMemorySentry.js-' | Out-Null
-        }
-    } catch { }
-    try {
-        if (-not (Get-Process -Name Spotify -ErrorAction SilentlyContinue)) {
-            & $spicetify.Source apply | Out-Null
-        } else {
-            Write-Warning (Get-LocalizedText 'Close Spotify and run `spicetify apply` to remove its sidebar entry.' 'Feche o Spotify e rode `spicetify apply` para remover a entrada da barra lateral.')
-        }
-    } catch { }
+# Preserve logs outside the removable install directory.
+$Logs = Join-Path $InstallDir 'logs'
+if (Test-Path -LiteralPath $Logs -PathType Container) {
+    $LogDestination = Join-Path $env:LOCALAPPDATA 'MemorySentry\logs'
+    New-Item -ItemType Directory -Path $LogDestination -Force | Out-Null
+    Copy-Item -Path (Join-Path $Logs '*') -Destination $LogDestination -Force -ErrorAction SilentlyContinue
 }
 
+Remove-Item -LiteralPath (Join-Path $StartupDir 'Spicetify Memory Sentry.vbs') -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath (Join-Path $StartupDir 'Spicetify Memory Sentry.lnk') -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $AppTarget -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $LegacyExtension -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $StartupVbs -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath $LegacyStartup -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $InstallDir -Recurse -Force -ErrorAction SilentlyContinue
 
-# Preserve logs for comparison; remove helper code/dependencies/settings.
-foreach ($name in @('helper.js', 'adaptive-policy.js', 'package.json', 'package-lock.json', 'settings.json', 'working-set-backup.json', 'working-set-backup.json.tmp', 'node_modules')) {
-    Remove-Item -LiteralPath (Join-Path $InstallDir $name) -Recurse -Force -ErrorAction SilentlyContinue
-}
-if ((Test-Path -LiteralPath $InstallDir) -and -not (Get-ChildItem -LiteralPath $InstallDir -Force -ErrorAction SilentlyContinue)) {
-    Remove-Item -LiteralPath $InstallDir -Force -ErrorAction SilentlyContinue
-}
-Write-Host (Get-LocalizedText 'Uninstallation complete. Logs were preserved in %LOCALAPPDATA%\SpicetifyMemorySentry\logs.' 'Desinstalação concluída. Os logs foram preservados em %LOCALAPPDATA%\SpicetifyMemorySentry\logs.') -ForegroundColor Green
+Say 'Memory Sentry was removed. Logs (if any) were preserved under %LOCALAPPDATA%\MemorySentry\logs.' 'Memory Sentry foi removido. Os logs (se existirem) foram preservados em %LOCALAPPDATA%\MemorySentry\logs.'

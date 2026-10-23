@@ -1,33 +1,48 @@
-name: Build release package
+name: Build and publish Memory Sentry
 on:
   push:
     tags:
       - 'v*'
 permissions:
   contents: write
+
 jobs:
-  package:
-    runs-on: ubuntu-latest
+  build-release:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate source and adaptive policy
-        run: node tests/validate-package.js
-      - name: Package source release and checksums
-        shell: bash
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Ensure release tag matches Cargo version
+        shell: pwsh
         run: |
-          mkdir -p dist
-          zip -r "dist/MemorySentry-${GITHUB_REF_NAME}.zip" \
-            README.md LICENSE PRIVACY.md SECURITY.md CHANGELOG.md manifest.json preview.png \
-            Install.bat Uninstall.bat app helper installer docs tests .github
-          cd dist
-          sha256sum "MemorySentry-${GITHUB_REF_NAME}.zip" > "MemorySentry-${GITHUB_REF_NAME}.zip.sha256"
-      - name: Publish GitHub Release
+          $cargo = Get-Content native/rust/Cargo.toml -Raw
+          if ($cargo -notmatch '(?m)^version\s*=\s*"([^"]+)"') { throw "Could not read Cargo version." }
+          $cargoVersion = $Matches[1]
+          $tagVersion = $env:GITHUB_REF_NAME.TrimStart('v')
+          if ($tagVersion -ne $cargoVersion) { throw "Release tag $tagVersion does not match Cargo version $cargoVersion." }
+      - name: Run Rust tests
+        run: cargo test --manifest-path native/rust/Cargo.toml --locked
+      - name: Build native Windows x64 companion
+        run: cargo build --release --manifest-path native/rust/Cargo.toml --target x86_64-pc-windows-msvc --locked
+      - name: Validate JavaScript and package metadata
+        run: node tests/validate-package.js
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build Setup EXE, portable ZIP and checksums
+        shell: pwsh
+        run: .\scripts\build-package.ps1 -Version $env:GITHUB_REF_NAME.TrimStart('v')
+      - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-pre') }}
+          make_latest: false
           files: |
-            dist/MemorySentry-${{ github.ref_name }}.zip
-            dist/MemorySentry-${{ github.ref_name }}.zip.sha256
+            dist/MemorySentrySetup-*.exe
+            dist/MemorySentrySetup-*.exe.sha256
+            dist/MemorySentry-*-windows-x64.zip
+            dist/MemorySentry-*-windows-x64.zip.sha256

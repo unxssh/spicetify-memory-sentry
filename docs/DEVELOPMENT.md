@@ -1,59 +1,44 @@
 # Development workflow
 
-## Local validation
+## Toolchain
 
-Use Node.js 22 or newer. From the repository root, run:
+- Stable Rust toolchain.
+- Windows 10/11 x64 desktop for full runtime verification.
+- Node.js 22+ only if recovering an earlier Node-based installation or running the legacy JavaScript policy tests.
+- Inno Setup 6 to compile the per-user Setup EXE.
 
-```powershell
-node --check app/index.js
-node --check helper/helper.js
-node --check helper/adaptive-policy.js
-node tests/validate-package.js
-```
+## Validate
 
-The policy tests run on any OS because `helper/adaptive-policy.js` contains only pure decision logic. The Windows companion itself is intentionally guarded to Windows and calls native APIs through Koffi. Static tests are not a substitute for a real Windows integration test.
+From the repository root:
+
+    cargo test --manifest-path native/rust/Cargo.toml --locked
+    cargo build --release --manifest-path native/rust/Cargo.toml --target x86_64-pc-windows-msvc --locked
+    node tests/validate-package.js
+
+For the resulting Windows binary, these commands do not apply working-set caps:
+
+    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --version
+    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --self-test
+
+The OS check must be run on a Windows 10/11 desktop edition. GitHub-hosted Windows runners are Windows Server, which is intentionally rejected by the product OS check.
+
+## Build the setup program
+
+The scripts/build-package.ps1 script creates dist/stage, copies the compiled executable, Custom App and required documentation into it, then compiles installer/inno/MemorySentry.iss using Inno Setup 6. It uploads the Setup EXE, source/package ZIP and SHA-256 checksums as workflow artifacts. A release tag publishes those artifacts as a GitHub release.
+
+Do not put built EXEs, Setup programs, ZIP files, Git bundles, local publishing scripts, checksums, secrets or local logs into source commits.
 
 ## Architecture
 
-- `app/index.js`: Spicetify Custom App dashboard, automatic English/Brazilian Portuguese localization, local diagnostics, and prerequisite links.
-- `helper/helper.js`: Windows process discovery, local API, native working-set control, recovery backups, and CPU-snapshot sampling.
-- `helper/adaptive-policy.js`: platform-independent adaptive ceiling policy and pure unit-testable CPU estimation.
-- `installer/`: current-user installer and uninstaller.
-- `docs/BENCHMARKING.md`: repeatable memory/latency A/B test.
-- `docs/RELEASE_CHECKLIST.md`: Windows runtime and publication gates.
+- app/index.js: Marketplace-installed Spicetify Custom App; automatic English/Brazilian Portuguese localization and missing-companion help.
+- native/rust/src/lib.rs: platform-independent adaptive policy and unit tests.
+- native/rust/src/platform/windows.rs: Win32 process/memory/window primitives, process identity checks, Windows version gate and per-user single-instance lock.
+- native/rust/src/runtime.rs: adaptive process monitor, recovery store, loopback API, configuration, logs, upgrade and uninstall actions.
+- installer/inno/MemorySentry.iss: per-user Setup EXE and uninstall wizard.
+- installer/Install.ps1 and installer/Uninstall.ps1: source/portable package fallback.
+- docs/BENCHMARKING.md: repeatable RAM and interaction-latency tests.
+- docs/RELEASE_CHECKLIST.md: release gates.
 
-## GitHub publishing
+## Publishing
 
-Use your normal authenticated Git client. Do not commit a local publishing helper script; repository credentials and publishing commands should remain outside the packaged application.
-
-For a new local checkout:
-
-```powershell
-git clone https://github.com/yanlvl99/spicetify-memory-sentry.git
-cd spicetify-memory-sentry
-git status --short
-```
-
-For the existing repository, verify the local-only helper is ignored and not staged:
-
-```powershell
-git check-ignore -v PUSH-TO-GITHUB.bat
-git status --short
-```
-
-If the helper was tracked previously, remove it from the Git index while keeping the local copy, and commit the updated ignore rules and test suite:
-
-```powershell
-git rm --cached --ignore-unmatch PUSH-TO-GITHUB.bat
-git add .gitignore tests/validate-package.js docs/DEVELOPMENT.md
-git commit -m "chore: exclude local publishing helper and update CI checks"
-```
-
-Configure the remote only if needed, then push explicitly:
-
-```powershell
-git remote -v
-git push -u origin main
-```
-
-Authenticate with Git Credential Manager or GitHub CLI when prompted. Never store tokens in scripts, bypass authentication, or commit machine-specific publishing helpers. Check the GitHub Actions workflow results before creating a release tag.
+Use English Conventional Commit messages and review the exact staged diff. The PR must pass JavaScript validation, policy tests, Windows x64 compilation and setup packaging. Do not merge or publish a stable release until a clean Windows 10/11 desktop test confirms audio continuity, restore, upgrade, crash recovery and uninstall behavior.

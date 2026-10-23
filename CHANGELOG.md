@@ -1,9 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Add an Inno Setup per-user installer and matching uninstall/recovery workflow for the native Rust companion.
+- Build the setup executable and portable Windows x64 package in CI, with SHA-256 checksums.
+- Remove the Node.js requirement for new installs while retaining explicit legacy Node recovery.
+- Clarify Windows 10/11-only support and both standalone/Marketplace install paths.
+- Clarify standalone and Marketplace install paths, supported Windows versions, and native companion requirements.
+- Add the first Rust migration scaffold and dedicated cross-platform policy tests.
+
+
+
 ## 0.2.0 — Adaptive policy preview
 
 - Replaced the user-selected fixed per-process cap with a role-based adaptive policy.
-- Raised a process ceiling by 8 MB after sustained CPU usage at or above 10% of total logical CPU capacity for six seconds.
+- Raised a process ceiling by 8 MB after sustained CPU usage at or above 10% of one logical processor for six seconds.
 - Lowered a ceiling by 4 MB after sustained CPU usage at or below 3% and at least 6 MB of working-set headroom for ten seconds.
 - Added hysteresis, per-role bounds, and an adjustment cooldown to prevent rapid oscillation.
 - Added local CPU estimates and per-process adaptive ceilings to the dashboard.
