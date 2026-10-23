@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-$Root = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 if (-not $Version) {
     $cargo = Get-Content -LiteralPath (Join-Path $Root "native\rust\Cargo.toml") -Raw
