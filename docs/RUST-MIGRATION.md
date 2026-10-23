@@ -1,42 +1,41 @@
-# Rust companion migration plan
+# Rust companion migration and release gate
 
-## Why Rust
+## Current preview status
 
-A native Rust helper can remove the global Node.js prerequisite, reduce runtime packaging complexity, and use Win32 APIs directly. It does not inherently avoid SmartScreen or antivirus warnings. The first Rust files in this branch are a **scaffold**, not an operational replacement for the 0.2.0 Node.js helper.
+The Rust source now contains an adaptive policy, Win32 process discovery and working-set calls, a loopback-only dashboard API, a per-install token, Windows 10/11 validation, legacy recovery hooks, per-user startup, and a recovery-aware uninstall command. It is wired for CI build testing, but it has not yet had end-to-end testing with a real Spotify installation on Windows 10 and 11.
 
-## Current scaffold
+The Rust helper is the intended native companion for the preview installer. It uses no third-party Rust crates in the current core, so there is no global Node.js/Koffi requirement for new installs. Legacy Node recovery is retained to help previous users restore old limits safely.
 
-- Standard-library-only adaptive policy port with unit tests.
-- Windows 10/11 client-edition detection through RtlGetVersion; Windows Server editions are rejected.
-- Safe CLI self-test/version commands.
-- CI test on Linux and Windows-target compile check.
-- No process enumeration, HTTP API, or working-set changes are enabled in the Rust binary yet.
+## Important safety model
 
-## Migration milestones
+1. The dedicated Spotify audio-service process is excluded from working-set changes.
+2. Every native memory mutation verifies the target process creation timestamp before changing or restoring limits.
+3. Original working-set limits are written to recovery storage before an initial cap is applied.
+4. Recovery records survive failed restoration and block upgrade/uninstall when the running helper or recovery state cannot be verified.
+5. The helper API binds only to 127.0.0.1, requires a random token and checks both the Host header and Spotify HTTPS Origin.
+6. The Custom App itself does not download or execute a native helper.
+7. Setup is per-user and does not request elevation or turn off Windows security tools.
+8. Logs stay local and are preserved outside the install directory on uninstall.
 
-1. **Policy parity.** Keep thresholds, per-role bounds, cooldown logic, and audio exclusion covered by unit tests. Add property tests for invalid samples and cap boundaries.
-2. **Native process discovery.** Enumerate Spotify process identities without a blocking shell command. Treat unknown process role or command line as ineligible, never guess.
-3. **Process classification.** Confirm parent/child, command line, image path, and process creation identity. Protect audio-service processes and test against current Spotify process layouts.
-4. **Working-set operations.** Implement GetProcessWorkingSetSizeEx/SetProcessWorkingSetSizeEx with strict access rights. Save original limits and identity atomically before modifying anything. Never apply a backup to a reused PID.
-5. **Recovery.** Restore limits on foreground/visible window transitions, controlled shutdown, startup recovery, uninstall, and all partial-error paths. Preserve recovery state whenever restoration fails.
-6. **Local API.** Bind only to 127.0.0.1, require a per-install random token, validate Origin and Host, cap request sizes, and expose only the required status/config/action endpoints.
-7. **Installer migration.** Bundle the compiled helper in the full release ZIP, remove the Node.js and npm requirement only after parity is verified, and keep Marketplace instructions explicit that the Custom App alone cannot install it.
-8. **Windows validation.** Build and test on actual Windows 10 and Windows 11 machines. Measure working set, private committed bytes, page faults, audio continuity, restore latency, installer rollback, upgrades, and uninstall. Use several Spotify/game/browser workloads.
-9. **Release cutover.** Update the installer, dashboard status text, README, Marketplace metadata, and release checksum flow together. Keep a fallback build for the old helper until a stable Rust release has survived real-world use.
+## Release milestones
 
-## Release gate
+- [x] Port the adaptive decision policy with unit tests.
+- [x] Add Win32 working-set, window-state, process-identity and token primitives.
+- [x] Add a Rust runtime implementation matching the dashboard API.
+- [x] Add setup/uninstall registration and legacy Node recovery workflow.
+- [x] Add CI policy tests and a Windows x64 compile/build job.
+- [ ] Verify Inno Setup compiles the per-user setup executable in CI.
+- [ ] Run the setup binary's safe CLI checks on the Windows runner and package the release artifacts.
+- [ ] Test on a real Windows 10 desktop with Spotify and Spicetify installed.
+- [ ] Test on a real Windows 11 desktop with Spotify and Spicetify installed.
+- [ ] Measure audio continuity, RAM reduction, UI restore latency, failed process operations, restart recovery and uninstall.
+- [ ] Verify the Marketplace missing-companion screen and both installation paths.
+- [ ] Add the spicetify-apps topic and publish a release before submitting the listing for public discovery.
 
-Do not make the Rust binary the installer default unless all of these are true:
+## Why the MSI is not the first installer
 
-- Windows 10 and Windows 11 runtime integration tests pass.
-- Audio-service processes are excluded by verified process classification.
-- Process identity is revalidated immediately before every memory operation.
-- Original limits survive helper crash/restart and failed updates.
-- The dashboard's API works with the Rust helper and remains loopback-only.
-- The installer does not require global Node.js/npm or use ExecutionPolicy bypass.
-- The user can uninstall while preserving recovery state when an operation fails.
-- README, privacy, security, changelog, and Marketplace description match actual behaviour.
+The current setup uses Inno Setup as a per-user EXE installer. It supports custom pre-install and pre-uninstall recovery checks without requiring Windows Installer custom actions or administrator privileges. An MSI can be considered later, after the per-user registration and rollback flow is validated; making an MSI before that would add packaging complexity without improving the memory-control engine.
 
-## Code signing and SmartScreen
+## Antivirus and signing
 
-The binary remains open source under GPL-3.0. Unsigned builds can still trigger SmartScreen, and signed builds can also warn until publisher/file reputation accumulates. Do not use self-signed certificates for public trust, disable Windows security, or promise that Rust avoids detections. Investigate reputable open-source signing programs (such as SignPath Foundation) only after verifying current eligibility and project requirements.
+Rust does not automatically prevent SmartScreen or antivirus warnings. The preview is unsigned and can receive reputation-based warnings. Keep source and build workflows public, publish SHA-256 files, never disable antivirus, and investigate an open-source signing program only after checking its current eligibility and trust model.

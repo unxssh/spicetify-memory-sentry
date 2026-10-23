@@ -329,7 +329,7 @@ fn persist_backups(state: &AppState) -> Result<(), String> {
     if let Some(parent) = state.backup_path.parent() { fs::create_dir_all(parent).map_err(|e| e.to_string())?; }
     if state.active_caps.is_empty() {
         let _ = fs::remove_file(&state.backup_path);
-        let _ = fs::remove_file(state.backup_path.with_extension("tsv.previous"));
+        let _ = fs::remove_file(state.backup_path.with_extension("previous"));
         let _ = fs::remove_file(state.backup_path.with_extension("tsv.tmp"));
         return Ok(());
     }
@@ -419,6 +419,7 @@ fn configure_spicetify(app_name: &str) -> Result<(), String> {
 
 pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
     let (os_name, build) = platform::detect_supported_client_os()?;
+    ensure_spotify_closed()?;
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let base = exe.parent().ok_or("Could not determine installation directory")?.to_path_buf();
     let settings_path = base.join("settings.json");
@@ -435,12 +436,18 @@ pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
         if !legacy_helper.is_file() {
             return Err("A legacy Node recovery backup exists but helper.js is missing. Restore the old limits before migrating; recovery data was preserved.".to_string());
         }
+        stop_legacy_node_helper(&base)?;
         let node = find_node().ok_or("A legacy Node recovery backup exists. Install Node.js 22+ temporarily so the old helper can restore limits, then rerun setup.")?;
         let result = Command::new(node).arg(&legacy_helper).arg("--restore-limits").output()
             .map_err(|e| format!("Could not start legacy working-set recovery: {e}"))?;
         if !result.status.success() {
             return Err("The previous helper could not restore every working-set limit. Installation stopped and the recovery backup was preserved.".to_string());
         }
+        cleanup_legacy_node_files(&base)?;
+    } else if legacy_helper.exists() {
+        // No legacy backup means the previous helper is idle; stop only this project's
+        // matching Node process and remove its now-obsolete runtime files.
+        cleanup_legacy_node_files(&base)?;
     }
 
     let existing_raw = fs::read_to_string(&settings_path).unwrap_or_default();
@@ -451,7 +458,7 @@ pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
         .unwrap_or(platform::random_token()?);
     write_configured_app(&index_path, &token)?;
     let settings = Settings {
-        port: parse_json_number(&existing_raw, "port").unwrap_or(DEFAULT_PORT as u64).clamp(1, 65535) as u16,
+        port: DEFAULT_PORT,
         token,
         auto_optimize: parse_json_bool(&existing_raw, "autoOptimize").unwrap_or(true),
         hidden_delay_seconds: parse_json_number(&existing_raw, "hiddenDelaySeconds").unwrap_or(DEFAULT_HIDDEN_DELAY_SECONDS).clamp(1, 30),
@@ -459,6 +466,7 @@ pub fn configure_install(app_dir_arg: &str) -> Result<(), String> {
     write_settings(&settings_path, &settings)?;
     configure_spicetify(APP_NAME)?;
     register_startup(&exe)?;
+    cleanup_legacy_startup();
     println!("{APP_NAME} configured for {os_name} build {build}.");
     println!("Companion: {}", base.display());
     println!("Dashboard: {}", app_dir.display());
@@ -544,43 +552,54 @@ pub fn prepare_upgrade() -> Result<(), String> {
     ensure_spotify_closed()?;
     let base = install_dir()?;
     let settings_path = base.join("settings.json");
+
+    // Migrate the previous Node helper only after its own recovery command succeeds.
     if read_legacy_node_backup() {
         let legacy_helper = base.join("helper.js");
         if !legacy_helper.is_file() {
-            return Err("A legacy Node recovery backup exists but helper.js is missing. Restore the old limits before upgrading; recovery data was preserved.".to_string());
+            return Err("A legacy Node recovery backup exists but helper.js is missing. Recovery data was preserved.".to_string());
         }
-        let node = find_node().ok_or("A legacy Node recovery backup exists. Install Node.js 22+ temporarily to restore the old limits before upgrading.".to_string())?;
+        stop_legacy_node_helper(&base)?;
+        let node = find_node().ok_or("A legacy Node recovery backup exists. Install Node.js 22+ temporarily so the old helper can restore limits.".to_string())?;
         let output = Command::new(node).arg(&legacy_helper).arg("--restore-limits").output()
-            .map_err(|e| format!("Could not restore legacy working-set limits: {e}"))?;
+            .map_err(|e| format!("Could not start legacy working-set recovery: {e}"))?;
         if !output.status.success() {
             return Err("Legacy recovery failed. Upgrade stopped and the backup was preserved.".to_string());
         }
+        cleanup_legacy_node_files(&base)?;
     }
+
+    // Ask a running Rust companion to restore limits and exit. A live process that
+    // does not acknowledge shutdown blocks replacement of the executable.
     if settings_path.exists() {
         let settings = load_settings(&settings_path)?;
-        if request_shutdown(settings.port, &settings.token).is_ok() {
-            thread::sleep(Duration::from_millis(350));
-        } else {
-            let pid_file = base.join("helper.pid");
-            let live_pid = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok());
-            if let Some(pid) = live_pid.filter(|pid| platform::process_exists(*pid)) {
-                return Err(format!("Memory Sentry is active (PID {pid}) but did not confirm recovery/shutdown. Upgrade stopped; old files and recovery data were preserved."));
-            }
-            let backup_path = base.join("working-set-backup.tsv");
-            for record in load_backup_file(&backup_path) {
-                match platform::restore_working_set_limits(record.pid, record.creation, record.minimum, record.maximum, record.flags) {
-                    Ok(_) => {},
-                    Err(error) => return Err(format!("Could not restore PID {} before upgrade: {error}. Old files and recovery data were preserved.", record.pid)),
-                }
-            }
-        }
+        let _ = request_shutdown(settings.port, &settings.token);
+        thread::sleep(Duration::from_millis(400));
     }
+
     let pid_file = base.join("helper.pid");
     if let Some(pid) = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok()) {
         if platform::process_exists(pid) {
-            return Err(format!("The old companion (PID {pid}) is still running. Upgrade stopped to avoid replacing a live executable."));
+            return Err(format!("Memory Sentry is still active (PID {pid}). Upgrade stopped to avoid replacing a live executable."));
         }
     }
+
+    // Recover any durable records left behind by a crash or an unresponsive helper.
+    let backup_path = base.join("working-set-backup.tsv");
+    let records = load_backup_file(&backup_path);
+    let mut failures = Vec::new();
+    for record in &records {
+        match platform::restore_working_set_limits(record.pid, record.creation, record.minimum, record.maximum, record.flags) {
+            Ok(_) => {},
+            Err(error) => failures.push(format!("PID {}: {error}", record.pid)),
+        }
+    }
+    if !failures.is_empty() {
+        return Err(format!("Upgrade stopped because some working-set limits could not be restored; recovery data was preserved:\\n{}", failures.join("\\n")));
+    }
+    let _ = fs::remove_file(&backup_path);
+    let _ = fs::remove_file(backup_path.with_extension("previous"));
+    let _ = fs::remove_file(backup_path.with_extension("tsv.tmp"));
     Ok(())
 }
 
@@ -590,8 +609,10 @@ pub fn pre_uninstall() -> Result<(), String> {
     prepare_upgrade()?;
     unregister_spicetify()?;
     unregister_startup()?;
+    cleanup_legacy_startup();
+    preserve_logs(&base);
     let _ = fs::remove_file(base.join("helper.pid"));
-    println!("Memory Sentry was stopped, recovery was attempted, and startup/app registration was removed.");
+    println!("Memory Sentry was stopped, recovery was attempted, startup/app registration was removed, and logs were preserved outside the install folder.");
     Ok(())
 }
 
@@ -621,6 +642,71 @@ pub fn check_supported_os() -> Result<(), String> {
     Ok(())
 }
 
+pub fn check_install_prerequisites() -> Result<(), String> {
+    check_supported_os()?;
+    ensure_spotify_closed()?;
+    if find_spicetify().is_none() {
+        return Err("Spicetify CLI was not found. Install Spicetify first, then rerun Memory Sentry Setup.".to_string());
+    }
+    println!("Installation prerequisites passed. Spotify is closed and Spicetify CLI was found.");
+    Ok(())
+}
+
+fn cleanup_legacy_startup() {
+    if let Some(appdata) = std::env::var_os("APPDATA") {
+        let startup = PathBuf::from(appdata).join("Microsoft").join("Windows").join("Start Menu").join("Programs").join("Startup");
+        let _ = fs::remove_file(startup.join("Spicetify Memory Sentry.vbs"));
+        let _ = fs::remove_file(startup.join("Spicetify Memory Sentry.lnk"));
+    }
+}
+
+fn stop_legacy_node_helper(base: &Path) -> Result<(), String> {
+    let helper = base.join("helper.js");
+    if !helper.exists() { return Ok(()); }
+    let safe_path = helper.to_string_lossy().replace('\'', "''");
+    let script = format!(
+        "$target = '{}'; Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" -ErrorAction SilentlyContinue | Where-Object {{ $_.CommandLine -and $_.CommandLine.Contains($target) -and $_.CommandLine.Contains('helper.js') }} | ForEach-Object {{ Stop-Process -Id ([int]$_.ProcessId) -Force -ErrorAction SilentlyContinue }}; exit 0",
+        safe_path
+    );
+    let output = Command::new("powershell.exe")
+        .args(["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", &script])
+        .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).status()
+        .map_err(|e| format!("Could not stop the legacy Memory Sentry Node process: {e}"))?;
+    if !output.success() {
+        return Err("Could not stop the legacy Memory Sentry Node process safely; recovery files were preserved.".to_string());
+    }
+    Ok(())
+}
+
+fn cleanup_legacy_node_files(base: &Path) -> Result<(), String> {
+    stop_legacy_node_helper(base)?;
+    let _ = fs::remove_file(base.join("helper.js"));
+    let _ = fs::remove_file(base.join("working-set-backup.json"));
+    let _ = fs::remove_dir_all(base.join("node_modules"));
+    cleanup_legacy_startup();
+    Ok(())
+}
+
+fn preserve_logs(base: &Path) {
+    let Some(local) = std::env::var_os("LOCALAPPDATA") else { return; };
+    let source = base.join("logs");
+    if !source.is_dir() { return; }
+    let dest = PathBuf::from(local).join("MemorySentry").join("logs");
+    if fs::create_dir_all(&dest).is_err() { return; }
+    let Ok(entries) = fs::read_dir(&source) else { return; };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if !path.is_file() { continue; }
+        let Some(name) = path.file_name() else { continue; };
+        let mut target = dest.join(name);
+        if target.exists() {
+            let renamed = format!("{}-{}.log", path.file_stem().and_then(|n| n.to_str()).unwrap_or("helper"), now_ms());
+            target = dest.join(renamed);
+        }
+        let _ = fs::copy(path, target);
+    }
+}
+
 pub fn restore_limits_command() -> Result<(), String> {
     let base = install_dir()?;
     if read_legacy_node_backup() {
@@ -640,7 +726,7 @@ pub fn restore_limits_command() -> Result<(), String> {
         return Err(format!("Some limits could not be restored; recovery data was preserved:\n{}", failed.join("\n")));
     }
     let _ = fs::remove_file(&backup_path);
-    let _ = fs::remove_file(backup_path.with_extension("tsv.previous"));
+    let _ = fs::remove_file(backup_path.with_extension("previous"));
     let _ = fs::remove_file(backup_path.with_extension("tsv.tmp"));
     println!("Recovery completed. {} record(s) processed.", records.len());
     Ok(())

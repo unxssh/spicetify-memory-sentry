@@ -1,52 +1,44 @@
 # Development workflow
 
-## Current supported implementation
+## Toolchain
 
-The 0.2.0 beta uses the Node.js companion. Do not replace its installer payload with the Rust scaffold until [the Rust migration gates](RUST-MIGRATION.md) pass. The Rust binary currently only checks its mode/OS and runs a platform-independent policy; it does not adjust Spotify's working sets.
+- Stable Rust toolchain.
+- Windows 10/11 x64 desktop for full runtime verification.
+- Node.js 22+ only if recovering an earlier Node-based installation or running the legacy JavaScript policy tests.
+- Inno Setup 6 to compile the per-user Setup EXE.
 
-## JavaScript package validation
+## Validate
 
-Use Node.js 22 or newer. From the repository root:
+From the repository root:
 
-```powershell
-node --check app/index.js
-node --check helper/helper.js
-node --check helper/adaptive-policy.js
-node tests/validate-package.js
-```
+    cargo test --manifest-path native/rust/Cargo.toml --locked
+    cargo build --release --manifest-path native/rust/Cargo.toml --target x86_64-pc-windows-msvc --locked
+    node tests/validate-package.js
 
-## Rust policy and target validation
+For the resulting Windows binary, these commands do not apply working-set caps:
 
-Install stable Rust, then run:
+    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --version
+    target\x86_64-pc-windows-msvc\release\memory-sentry-native.exe --self-test
 
-```powershell
-cargo test --manifest-path native/rust/Cargo.toml --locked
-cargo check --manifest-path native/rust/Cargo.toml --target x86_64-pc-windows-msvc --locked
-```
+The OS check must be run on a Windows 10/11 desktop edition. GitHub-hosted Windows runners are Windows Server, which is intentionally rejected by the product OS check.
 
-The policy tests run on any operating system. The Windows target check verifies that the Windows-specific OS gate builds; it is not an integration test for native memory control.
+## Build the setup program
+
+The GitHub Actions workflow creates dist/stage, copies the compiled executable, Custom App and required documentation into it, then compiles installer/inno/MemorySentry.iss using Inno Setup 6. It uploads the Setup EXE, source/package ZIP and SHA-256 checksums as workflow artifacts. A release tag publishes those artifacts as a GitHub release.
+
+Do not put built EXEs, Setup programs, ZIP files, Git bundles, local publishing scripts, checksums, secrets or local logs into source commits.
 
 ## Architecture
 
-- `app/index.js`: Spicetify Custom App dashboard, automatic English/Brazilian Portuguese localization, companion status, and help links.
-- `helper/helper.js`: currently supported Node.js implementation with process discovery, local API, working-set management, backup/recovery, and adaptive sampling.
-- `helper/adaptive-policy.js`: current JavaScript adaptive policy and tests.
-- `native/rust/src/lib.rs`: platform-independent Rust adaptive policy, kept in parity with JavaScript.
-- `native/rust/src/platform/windows.rs`: Windows 10/11 desktop-edition gate for the Rust prototype.
-- `installer/`: current-user installer/uninstaller. It still installs the Node.js helper in 0.2.0.
-- `docs/INSTALLATION.md`: standalone and Marketplace installation paths.
-- `docs/BENCHMARKING.md`: repeatable memory/latency A/B test.
-- `docs/RUST-MIGRATION.md`: migration plan and release gate.
+- app/index.js: Marketplace-installed Spicetify Custom App; automatic English/Brazilian Portuguese localization and missing-companion help.
+- native/rust/src/lib.rs: platform-independent adaptive policy and unit tests.
+- native/rust/src/platform/windows.rs: Win32 process/memory/window primitives, process identity checks, Windows version gate and per-user single-instance lock.
+- native/rust/src/runtime.rs: adaptive process monitor, recovery store, loopback API, configuration, logs, upgrade and uninstall actions.
+- installer/inno/MemorySentry.iss: per-user Setup EXE and uninstall wizard.
+- installer/Install.ps1 and installer/Uninstall.ps1: source/portable package fallback.
+- docs/BENCHMARKING.md: repeatable RAM and interaction-latency tests.
+- docs/RELEASE_CHECKLIST.md: release gates.
 
 ## Publishing
 
-Commit messages should use English Conventional Commit style. Run all local checks before pushing:
-
-```powershell
-node tests/validate-package.js
-cargo test --manifest-path native/rust/Cargo.toml --locked
-git status --short
-git diff --check
-```
-
-Then review the exact staged diff, create a signed commit, and push through your authenticated Git client. Never include local publishing scripts, release ZIPs, bundles, checksums, credentials, or machine-specific logs in a source commit. The GitHub workflow must pass before a release is created.
+Use English Conventional Commit messages and review the exact staged diff. The PR must pass JavaScript validation, policy tests, Windows x64 compilation and setup packaging. Do not merge or publish a stable release until a clean Windows 10/11 desktop test confirms audio continuity, restore, upgrade, crash recovery and uninstall behavior.

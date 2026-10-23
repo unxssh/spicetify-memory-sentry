@@ -1,47 +1,51 @@
 # Installation guide
 
-**Supported operating systems: Windows 10 and Windows 11 desktop editions only.**
+**Supported operating systems: Windows 10 and Windows 11 desktop editions only (x64 desktop).**
 
-Memory Sentry has two entry points. Both paths ultimately require the Windows companion because a Spicetify Custom App cannot call the Win32 working-set APIs directly.
+Memory Sentry has two entry points. Both paths require the native Rust companion because a Spicetify Custom App cannot call Win32 working-set APIs directly.
 
-## Path A: standalone installer
+## Path A — standalone installer
 
-For people who already know Memory Sentry and want the complete package:
+1. Open the official GitHub Releases page: https://github.com/yanlvl99/spicetify-memory-sentry/releases
+2. Download the release named Memory Sentry Setup and its accompanying SHA-256 file.
+3. Verify the downloaded setup executable against the checksum. A checksum confirms that the file matches the release asset; it does not establish the publisher's identity.
+4. Close Spotify completely.
+5. Run Setup as the same Windows user that runs Spotify and Spicetify. Do not use Run as administrator.
+6. Read any preflight error. Setup checks Windows 10/11, confirms Spotify is closed, finds Spicetify CLI and attempts legacy recovery before replacing existing files.
+7. Once setup completes, reopen Spotify and select Memory Sentry in the sidebar.
+8. The companion is registered to start at login for the current user. The setup program also offers to start it immediately.
 
-1. Open the [official GitHub Releases page](https://github.com/yanlvl99/spicetify-memory-sentry/releases).
-2. Download the complete ZIP and the adjacent SHA-256 checksum.
-3. Verify the downloaded file against the checksum. A checksum validates file integrity, not the publisher's identity.
-4. Close Spotify completely and extract the ZIP to a normal user-writable folder.
-5. Run `Install.bat`; administrator privileges should not be required.
-6. Read the setup output. If a prerequisite is missing, install it from its official vendor and restart the installer.
-7. Open Spotify and confirm that Memory Sentry appears in the sidebar and reports a connected companion.
-8. If the UI still reports no companion, use the setup guide and diagnostic logs. Do not repeatedly reinstall over an active Spotify process.
+## Path B — Marketplace
 
-## Path B: Marketplace
-
-For people who discover Memory Sentry in the Spicetify Marketplace:
-
-1. Install the Custom App through Marketplace.
+1. Install Memory Sentry from the Spicetify Marketplace.
 2. Open Memory Sentry inside Spotify.
-3. If the companion is missing, the page explains that Marketplace installed only the UI. Select **Open official releases** to find the complete package or **Marketplace setup guide** to read these instructions.
-4. Download the release ZIP, verify its checksum, close Spotify, and run `Install.bat`.
-5. Reopen Spotify and select **Refresh** in Memory Sentry.
+3. When the helper is not connected, use Download official setup or Marketplace setup guide. Installing the Marketplace panel by itself cannot enable native memory control.
+4. Download and verify the official Setup executable.
+5. Close Spotify and run Setup as your normal user.
+6. Reopen Spotify, then use Refresh to verify that the dashboard connects.
 
-The app never silently installs or executes a native companion. The user remains in control of the download and installer.
+The Custom App does not download or execute native programs automatically. This is an intentional user-consent and security boundary.
 
-## Current beta prerequisites
+## Upgrade from the Node.js preview
 
-The 0.2.0 beta still uses a Node.js helper and requires Node.js 22+ with npm. The installer should direct users to https://nodejs.org/en/download if either executable is missing. Rust migration work is separate and experimental; do not replace the working Node helper until the Rust implementation passes parity, recovery, and Windows runtime tests.
+The Rust companion does not need a global Node.js installation for new installs. If a previous Node-based version has an outstanding working-set-backup.json, setup stops only the matching old Node helper, runs its restore command, verifies the exit code, and keeps recovery files if restoration fails. It may require Node.js 22+ temporarily for that migration. Never delete the backup manually to force an upgrade.
 
-## Supported and unsupported platforms
+On upgrades, Setup asks the old companion to restore limits before moving the previous folder. If recovery fails, a process is still running, or Spicetify registration cannot be completed, Setup aborts and attempts to roll back the previous file set.
 
-Supported: Windows 10 and Windows 11 desktop editions.
+## Uninstall
 
-Not supported: macOS, Linux, Windows 7/8/8.1, Windows Server, or other platforms. The installer checks the operating system before making changes.
+Use Windows Settings → Apps → Installed apps → Memory Sentry → Uninstall. The uninstaller checks that Spotify is closed and runs a native pre-uninstall command. That command restores recorded working-set limits, removes the current-user startup entry and deregisters the Custom App. If restoration fails, the uninstaller stops before removing program files or recovery records.
 
-## Troubleshooting and removal
+Logs are preserved at %LOCALAPPDATA%\MemorySentry\logs when the application directory is removed. You can also run Uninstall.bat from the source/portable package, with the same recovery checks.
 
-- If Spotify is open, close it completely before installing or updating.
-- If the dashboard cannot connect, verify that the companion is running and inspect its local log file.
-- If Windows shows an unsigned-app warning, verify the download source and SHA-256 and read the security documentation. Do not disable antivirus or follow instructions that bypass security controls.
-- To remove the app, close Spotify and run `Uninstall.bat`. The uninstaller must attempt to restore saved working-set limits before deleting recovery data.
+## Security and unsupported systems
+
+The installer is per-user and should not request administrator privileges. It does not disable antivirus, SmartScreen, the firewall or Windows execution-policy protections. Unsigned setup files may still show reputation warnings; verify the source and SHA-256 instead of blindly bypassing warnings.
+
+Supported: Windows 10 and Windows 11 desktop editions, x64.
+
+Unsupported: Windows Server, Windows 7/8/8.1, macOS, Linux, and ARM64 Windows in this preview.
+
+## Legacy/manual package
+
+The source ZIP contains Install.bat, Uninstall.bat, installer/Install.ps1 and installer/Uninstall.ps1 for a per-user install without Inno Setup. Run the scripts from a complete ZIP whose root contains MemorySentry.exe and app/. The recommended route for most users is the standalone setup program from GitHub Releases.

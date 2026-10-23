@@ -32,6 +32,7 @@ fn main() {
     {
         let result = match args.as_slice() {
             [command] if command == "--check-os" => runtime::check_supported_os(),
+            [command] if command == "--check-install" => runtime::check_install_prerequisites(),
             [command] if command == "--prepare-upgrade" => runtime::prepare_upgrade(),
             [] => runtime::run_monitor(),
             [command] if command == "--monitor" => runtime::run_monitor(),
@@ -39,7 +40,7 @@ fn main() {
             [command] if command == "--pre-uninstall" => runtime::pre_uninstall(),
             [command] if command == "--restore-limits" => runtime::restore_limits_command(),
             [command, app_dir] if command == "--configure" => runtime::configure_install(app_dir),
-            _ => Err("Unknown arguments. Supported commands: --version, --self-test, --check-os, --monitor, --launch, --prepare-upgrade, --configure <custom-app-folder>, --pre-uninstall, --restore-limits.".to_string()),
+            _ => Err("Unknown arguments. Supported commands: --version, --self-test, --check-os, --check-install, --monitor, --launch, --prepare-upgrade, --configure <custom-app-folder>, --pre-uninstall, --restore-limits.".to_string()),
         };
         if let Err(error) = result {
             eprintln!("Memory Sentry: {error}");

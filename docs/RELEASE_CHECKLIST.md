@@ -1,27 +1,37 @@
 # Release checklist
 
-Do not publish a stable release until the following checks are complete.
+Do not call the release stable until all required real-desktop tests are complete.
 
-## Required Windows validation
+## Build and package
 
-- [ ] Install on a clean Windows 10/11 account with Spotify and Spicetify already installed.
-- [ ] Confirm Node.js 22+ and npm are detected; confirm missing prerequisites lead to official project pages.
-- [ ] Confirm the installer does not request elevation or change antivirus, SmartScreen, firewall, or execution-policy settings.
-- [ ] Confirm the local API binds only to `127.0.0.1` and rejects missing/wrong tokens and non-Spotify origins.
-- [ ] Confirm each target's original working-set limits are persisted before modification.
-- [ ] Confirm the dedicated audio-service process is always excluded.
-- [ ] Confirm adaptive CPU estimates and ceiling adjustments under sustained high CPU and idle workloads.
-- [ ] Confirm limits are restored on focus return, automatic optimization disable, normal shutdown, and uninstallation.
-- [ ] Test recovery after force-closing the helper and after restarting Windows.
-- [ ] Run at least five restore-to-interaction samples per workload and compare medians.
-- [ ] Confirm the UI switches between English and Brazilian Portuguese based on `navigator.language`.
-- [ ] Confirm no network telemetry is emitted by the helper.
+- [ ] cargo test for native/rust/Cargo.toml passes.
+- [ ] Windows x64 build succeeds for x86_64-pc-windows-msvc.
+- [ ] Inno Setup compiles the per-user setup executable in CI.
+- [ ] Release ZIP, setup EXE and each SHA-256 file are uploaded and independently verified.
+- [ ] Setup version, README and changelog agree.
+- [ ] Marketplace manifest and preview exist, root README is valid and repository topic spicetify-apps is set.
+- [ ] No Node.js requirement remains for new Rust installs. Any remaining Node dependency is clearly documented as legacy recovery only.
 
-## Publishing
+## Required Windows 10 and Windows 11 desktop validation
 
-1. Ensure the GitHub Actions validation workflow passes on the final commit.
-2. Add the `spicetify-apps` topic to the public repository.
-3. Review the current Spicetify Marketplace Custom App publishing rules and submit the listing only after the native-companion requirement is clear in the README and listing metadata.
-4. Publish a version tag such as `v0.2.0` only after Windows runtime testing. The release workflow packages the source installer and publishes a SHA-256 checksum.
-5. Verify the downloaded ZIP against its checksum. A checksum validates file integrity but does not prove publisher identity.
-6. Add a trusted code-signing certificate and provenance attestations when the project has the required signing identity and CI secrets. Never disable or bypass Windows security controls to suppress warnings.
+- [ ] Install on a clean user account with Spotify Desktop and Spicetify already installed.
+- [ ] Verify setup rejects unsupported OS editions before modifying files.
+- [ ] Confirm setup is per-user, does not ask for admin and does not alter antivirus/SmartScreen/firewall settings.
+- [ ] Confirm original process limits are durably saved before each initial cap.
+- [ ] Confirm audio-service processes remain excluded.
+- [ ] Confirm high sustained CPU raises the per-process ceiling and idle/headroom lowers it without oscillation.
+- [ ] Confirm limits are restored on focus return, disable, shutdown, restart recovery and uninstall.
+- [ ] Confirm an unresponsive recovery path leaves backups and blocks file removal.
+- [ ] Test legacy Node migration with and without Node.js 22+ and with successful and failed recovery.
+- [ ] Run at least five restore-to-interaction samples for the same workload and compare medians.
+- [ ] Verify English/Portuguese UI language selection.
+- [ ] Verify no network telemetry is emitted by the helper.
+- [ ] Verify uninstall removes only the Memory Sentry Custom App and install directory while preserving logs outside the app folder.
+
+## Public release
+
+- [ ] CI passes on the exact release commit.
+- [ ] Setup EXE and SHA-256 files are attached to the correct release.
+- [ ] Use a prerelease flag for preview tags (for example, v0.3.0-pre.2).
+- [ ] Never state the release has no antivirus warnings; the current executable is unsigned.
+- [ ] Submit to the Spicetify Marketplace only after the companion installer exists and both install paths have been tested.
