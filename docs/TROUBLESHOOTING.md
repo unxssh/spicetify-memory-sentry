@@ -4,17 +4,21 @@ Memory Sentry supports Windows 10 and Windows 11 desktop editions only. These st
 
 ## Dashboard shows "connection unavailable"
 
-The installer launches the companion automatically and waits for its authenticated local API to respond. The dashboard displays an HTTP/API error where available. For failures that happen before the API starts, inspect:
+The dashboard now shows the detailed connection error. For failures that happen before the local API starts, inspect:
 
 \`%LOCALAPPDATA%\\SpicetifyMemorySentry\\logs\\startup.log\`
 
-For runtime events after the API starts, inspect \`helper.log\` in the same \`logs\` folder. These logs stay on the PC and are not uploaded. If the startup log says the API port is already in use, close the other program using port 38472 and launch Memory Sentry again.
+For runtime events after the API starts, inspect \`helper.log\` in the same \`logs\` folder. These logs stay on the PC and are not uploaded. A "port already in use" error means another process is listening on port 38472. An "Invalid local token" error indicates that the dashboard and companion were configured with different tokens; rerun the official installer to configure both together.
 
-Marketplace installs the dashboard only. Download the official Memory Sentry Setup executable from https://github.com/yanlvl99/spicetify-memory-sentry/releases and verify its SHA-256 file. Check the diagnostic before repeatedly reinstalling.
+Marketplace installs only the dashboard. The official setup executable is available at https://github.com/yanlvl99/spicetify-memory-sentry/releases. Check the diagnostic before repeatedly reinstalling.
+
+## Uninstall while Spotify is open
+
+The uninstaller asks the native companion to restore the original Windows working-set limits and exit, removes its current-user startup registration, then removes the Custom App from Spicetify and runs \`spicetify apply\`. That lets Spicetify refresh Spotify as part of removing the app; you should not need to close Spotify manually for a normal uninstall. If the companion cannot confirm recovery or its process will not exit, uninstall stops and preserves the recovery files instead of deleting them.
 
 ## Setup says Spotify is running
 
-Close Spotify from its own menu and make sure all Spotify.exe processes have exited. Setup refuses to replace files while Spotify is active.
+For a new installation or upgrade, setup still requires Spotify to be closed while files are replaced. This check is separate from uninstall.
 
 ## Setup says Spicetify was not found
 
@@ -30,7 +34,7 @@ A working-set limit controls which memory pages may remain resident; restoring t
 
 ## Uninstall stops because recovery failed
 
-This is a deliberate safety stop. Close Spotify and retry uninstall. If the companion is missing but recovery records remain, reinstall the matching release so it can read the backup and restore the recorded settings. Do not manually delete working-set-backup.tsv, working-set-backup.previous, or legacy working-set-backup.json.
+This is a deliberate safety stop. Retry uninstall after reviewing the error. If the companion is missing but recovery records remain, reinstall the matching release so it can read the backup and restore the recorded settings. Do not manually delete working-set-backup.tsv, working-set-backup.previous, or legacy working-set-backup.json.
 
 ## Windows SmartScreen or antivirus warning
 

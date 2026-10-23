@@ -18,7 +18,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "0.3.1";
+const VERSION: &str = "0.3.2";
 const DEFAULT_PORT: u16 = 38472;
 const DEFAULT_HIDDEN_DELAY_SECONDS: u64 = 2;
 const MAX_HTTP_HEADER_BYTES: usize = 16 * 1024;
@@ -549,7 +549,6 @@ fn read_legacy_node_backup() -> bool {
 }
 
 pub fn prepare_upgrade() -> Result<(), String> {
-    ensure_spotify_closed()?;
     let base = install_dir()?;
     let settings_path = base.join("settings.json");
 
@@ -578,9 +577,17 @@ pub fn prepare_upgrade() -> Result<(), String> {
     }
 
     let pid_file = base.join("helper.pid");
+    for _ in 0..50 {
+        let active_pid = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok());
+        if active_pid.map(platform::process_exists).unwrap_or(false) {
+            thread::sleep(Duration::from_millis(100));
+        } else {
+            break;
+        }
+    }
     if let Some(pid) = fs::read_to_string(&pid_file).ok().and_then(|s| s.trim().parse::<u32>().ok()) {
         if platform::process_exists(pid) {
-            return Err(format!("Memory Sentry is still active (PID {pid}). Upgrade stopped to avoid replacing a live executable."));
+            return Err(format!("Memory Sentry is still active (PID {pid}) after the shutdown request. The recovery data was preserved."));
         }
     }
 
@@ -604,11 +611,12 @@ pub fn prepare_upgrade() -> Result<(), String> {
 }
 
 pub fn pre_uninstall() -> Result<(), String> {
-    ensure_spotify_closed()?;
+    // Do not make the user close Spotify just to uninstall. Restore and stop the helper first,
+    // remove its logon launch registration, then let spicetify apply refresh/restart Spotify.
     let base = install_dir()?;
     prepare_upgrade()?;
-    unregister_spicetify()?;
     unregister_startup()?;
+    unregister_spicetify()?;
     cleanup_legacy_startup();
     preserve_logs(&base);
     let _ = fs::remove_file(base.join("helper.pid"));

@@ -83,6 +83,9 @@ check('new installer uses the native Rust executable and fails closed on OS/prer
 check('Inno Setup packages the app and guards install/upgrade/uninstall', /PrivilegesRequired=lowest/.test(setupScript) && /--check-os/.test(setupScript) && /--prepare-upgrade/.test(setupScript) && /InitializeUninstall/.test(setupScript) && /--pre-uninstall/.test(setupScript));
 check('build script compiles Inno setup and writes checksums', /ISCC\.exe/.test(buildScript) && /Get-FileHash/.test(buildScript) && /MemorySentrySetup-/.test(buildScript));
 check('dashboard preserves detailed local API failures', app.includes('err && err.message') && app.includes("setError(tx('statusError') + ' [' + detail + ']')"));
+check('dashboard renders actual connection diagnostics', app.includes("`${tx('helperMissingBody')} ${error}`"));
+check('Rust uninstall allows Spotify to remain open and restores first', !/pub fn pre_uninstall\(\) -> Result<(), String> \{\s*ensure_spotify_closed/.test(rustRuntime) && rustRuntime.indexOf('pub fn pre_uninstall()') < rustRuntime.indexOf('unregister_startup()?;') && rustRuntime.indexOf('unregister_startup()?;') < rustRuntime.indexOf('unregister_spicetify()?;'));
+check('single-instance mutex clears stale Win32 last-error state', rustPlatform.includes('SetLastError(0)'));
 check('Rust launcher records early startup failures and verifies API readiness', rustRuntime.includes('startup.log') && rustRuntime.includes('request_status(settings.port, &settings.token)') && rustRuntime.includes('failed to become ready after 5 seconds'));
 check('installer always launches the companion after setup', setupScript.includes('Flags: runhidden') && !setupScript.includes('Flags: postinstall nowait skipifsilent runhidden'));
 check('installer avoids ExecutionPolicy Bypass', !/ExecutionPolicy\s+Bypass/i.test(read('Install.bat')) && !/ExecutionPolicy\s+Bypass/i.test(read('Uninstall.bat')));

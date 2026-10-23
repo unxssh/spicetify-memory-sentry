@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.3.2 — Connection diagnostics and non-blocking uninstall (experimental)
+
+- Render the actual dashboard API error instead of only the generic disconnected-state copy.
+- Clear the Win32 last-error value before creating the single-instance mutex to avoid false duplicate-instance detection.
+- Allow uninstall while Spotify is open by restoring/stopping the companion first, removing startup registration, and then applying the Spicetify removal.
+- Wait up to five seconds for a gracefully stopped companion before preserving recovery data and blocking unsafe file removal.
+
 ## 0.3.1 — Companion startup diagnostics (experimental)
 
 - Make the installer launch the native companion automatically instead of relying on an optional post-install checkbox.

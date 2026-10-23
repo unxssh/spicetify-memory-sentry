@@ -1,5 +1,5 @@
 #ifndef AppVersion
-  #define AppVersion "0.3.1"
+  #define AppVersion "0.3.2"
 #endif
 #ifndef StageDir
   #define StageDir "..\..\dist\stage"
@@ -34,7 +34,7 @@ UsePreviousLanguage=yes
 LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=no
 SetupLogging=yes
-VersionInfoVersion=0.3.1.0
+VersionInfoVersion=0.3.2.0
 Uninstallable=yes
 
 [Languages]
@@ -52,8 +52,8 @@ english.ConfigureFailed=Files were copied, but Memory Sentry could not register 
 brazilianportuguese.ConfigureFailed=Os arquivos foram copiados, mas o Memory Sentry não conseguiu registrar seu Custom App. O instalador tentou reverter o Custom App se a recuperação foi concluída. Verifique a saída e execute o instalador novamente para reparar a instalação.
 english.CompanionMissing=The native companion is missing from this setup package. Download the complete official release package.
 brazilianportuguese.CompanionMissing=O auxiliar nativo não está neste pacote de instalação. Baixe o pacote oficial completo.
-english.UninstallStopped=Uninstall stopped because recovery or unregistering did not complete. Close Spotify, review the error, and retry. No program files were removed.
-brazilianportuguese.UninstallStopped=A desinstalação foi interrompida porque a recuperação ou a remoção do registro não foi concluída. Feche o Spotify, confira o erro e tente novamente. Nenhum arquivo do programa foi removido.
+english.UninstallStopped=Uninstall stopped because recovery or unregistering did not complete. Review the error and retry. No program files were removed.
+brazilianportuguese.UninstallStopped=A desinstalação foi interrompida porque a recuperação ou a remoção do registro não foi concluída. Confira o erro e tente novamente. Nenhum arquivo do programa foi removido.
 english.RecoveryDataExists=Recovery data exists but the companion executable is missing. Uninstall stopped to avoid losing recovery records. Reinstall the matching package first.
 brazilianportuguese.RecoveryDataExists=Há dados de recuperação, mas o executável auxiliar está ausente. A desinstalação foi interrompida para evitar perder os registros. Reinstale primeiro o pacote correspondente.
 english.StartMemorySentry=Start Memory Sentry now

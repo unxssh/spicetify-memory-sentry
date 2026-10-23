@@ -16,7 +16,7 @@ const MSS_TEXT = {
     intro: 'Adaptive memory management for Spotify Desktop. Supported operating systems: Windows 10 and Windows 11 only. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
     connected: 'Companion connected', unavailable: 'Connection unavailable', waiting: 'Waiting for companion',
     helperMissingTitle: 'Windows companion is not connected',
-    helperMissingBody: 'The Marketplace installs this dashboard only; it cannot install the native Windows companion. Download the official Windows setup to install both components. Windows 10 and Windows 11 only. The Rust companion is in preview; review the release notes before installing.',
+    helperMissingBody: 'The dashboard cannot reach the local Windows companion API. This can happen even when setup completed. The detailed connection error is shown below; check the local startup log if needed.',
     helperButton: 'Download official setup', installGuideButton: 'Marketplace setup guide', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
     spotifyRam: 'Spotify resident memory', ramNote: '{count} Spotify processes detected. Summing working sets can double-count shared pages.',
     optimizedRam: 'Managed-process memory', managedNote: '{count} non-audio processes are currently eligible for optimization.',
@@ -46,7 +46,7 @@ const MSS_TEXT = {
     intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Sistemas compatíveis: somente Windows 10 e Windows 11. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
     connected: 'Auxiliar conectado', unavailable: 'Conexão indisponível', waiting: 'Aguardando auxiliar',
     helperMissingTitle: 'O auxiliar do Windows não está conectado',
-    helperMissingBody: 'O Marketplace instala apenas este painel; ele não instala o auxiliar nativo do Windows. Baixe o instalador oficial do Windows para instalar os dois componentes. Compatível somente com Windows 10 e Windows 11. O auxiliar Rust está em prévia; leia as notas da versão antes de instalar.',
+    helperMissingBody: 'O painel não consegue acessar a API local do auxiliar do Windows. Isso também pode acontecer mesmo quando a instalação terminou. O erro detalhado aparece abaixo; consulte o log local de inicialização se necessário.',
     helperButton: 'Baixar instalador oficial', installGuideButton: 'Guia de instalação do Marketplace', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
     spotifyRam: 'Memória residente do Spotify', ramNote: '{count} processos do Spotify detectados. A soma dos working sets pode contar páginas compartilhadas mais de uma vez.',
     optimizedRam: 'Memória dos processos gerenciados', managedNote: '{count} processos sem relação com áudio estão elegíveis para otimização.',
@@ -217,7 +217,7 @@ function MSSApp() {
         h('div', { className: 'mss-small', style: { marginTop: '10px' } }, `${MSSWindowLabel(spotify.windowState || 'not-detected')} · ${MSS_PT ? 'Idioma automático: português' : 'Auto language: English'}`)),
       h('div', { className: 'mss-pill' }, h('span', { className: 'mss-dot', style: { background: error ? '#e05252' : (helperRunning ? 'var(--spice-button,#1ed760)' : '#d6a03d') } }), error ? tx('unavailable') : (helperRunning ? tx('connected') : tx('waiting')))
     ),
-    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${tx('statusError')}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenInstallGuide }, tx('installGuideButton')))) : null,
+    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${error}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenInstallGuide }, tx('installGuideButton')))) : null,
     h('div', { className: 'mss-notice mss-notice-warn' }, tx('safety')),
     h('div', { className: 'mss-grid' },
       card(tx('spotifyRam'), MSSFormatMB(memory.spotifyTotalMB), 'MB', tx('ramNote', { count: memory.processCount || 0 })),
@@ -241,7 +241,7 @@ function MSSApp() {
       })) : h('div', { className: 'mss-empty' }, tx('noneDetected')),
       h('div', { className: 'mss-actions' },
         h('button', { className: 'mss-btn mss-btn-primary', disabled: busy || !helperRunning || !activeCount, onClick: restoreLimits }, busy ? tx('restoring') : tx('restoreNow')),
-        h('button', { className: 'mss-btn mss-btn-secondary', disabled: !helperRunning, onClick: async () => { try { setStatus(await MSSRequest('/api/status')); setError(''); } catch (_) { setError(tx('statusError')); } } }, tx('refresh')),
+        h('button', { className: 'mss-btn mss-btn-secondary', disabled: !helperRunning, onClick: async () => { try { setStatus(await MSSRequest('/api/status')); setError(''); } catch (err) { const detail = err && err.message ? String(err.message) : String(err || 'Unknown error'); setError(tx('statusError') + ' [' + detail + ']'); } } }, tx('refresh')),
         telemetry.lastAdaptiveAdjustmentAt ? h('span', { className: 'mss-small' }, tx('lastAdjustment', { time: MSSDate(telemetry.lastAdaptiveAdjustmentAt) })) : null
       ),
       status?.lastAction ? h('div', { className: 'mss-notice' }, tx('lastAction', { count: status.lastAction.applied || 0 })) : null

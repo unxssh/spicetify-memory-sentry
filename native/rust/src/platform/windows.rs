@@ -62,6 +62,7 @@ extern "system" {
     fn OpenProcess(access: u32, inherit: i32, process_id: u32) -> Handle;
     fn CloseHandle(handle: Handle) -> i32;
     fn GetLastError() -> u32;
+    fn SetLastError(error: u32);
     fn GetProcessTimes(
         process: Handle,
         creation: *mut FileTime,
@@ -516,6 +517,7 @@ impl Drop for SingleInstanceGuard {
 
 pub fn acquire_single_instance() -> Result<SingleInstanceGuard, String> {
     let name: Vec<u16> = "Local\\MemorySentry-Companion".encode_utf16().chain(std::iter::once(0)).collect();
+    unsafe { SetLastError(0); }
     let handle = unsafe { CreateMutexW(std::ptr::null_mut(), 1, name.as_ptr()) };
     if handle.is_null() {
         return Err(format!("Could not create single-instance mutex (Win32 error {}).", last_error()));
