@@ -9,13 +9,13 @@
 Memory Sentry no longer exposes a manual per-process RAM cap. Instead, the companion maintains an independent ceiling for each eligible Spotify process:
 
 - Role-based starting ceilings: main process 36 MB, GPU and renderer 28 MB, utility/helper 24 MB, crash handler 16 MB.
-- If a process averages at least 10% of total logical CPU capacity for six seconds or longer, its ceiling may rise by 8 MB.
+- If a process averages at least 10% of one logical processor for six seconds or longer, its ceiling may rise by 8 MB.
 - If CPU remains at or below 3%, and the process stays at least 6 MB below its current ceiling for ten seconds, its ceiling may fall by 4 MB.
 - Adjustments have an eight-second cooldown. The global safety range is 12–64 MB; each role has its own bounds. The main process keeps a 24 MB floor, while background renderers can shrink to 12 MB to balance RAM savings and window restoration.
 - The dedicated Spotify audio-service process is always excluded.
 - The policy runs only after the Spotify window has been minimized or hidden for the configured delay. Original native limits are restored when the window becomes visible.
 
-CPU usage is estimated from consecutive Windows process snapshots and normalized by the number of logical processors. It is a heuristic, not a claim that CPU usage always means a process needs more memory. The adaptive policy is deliberately conservative and should be validated with real-world A/B tests.
+CPU usage is estimated from consecutive Windows process snapshots as a percentage of one logical processor, capped at 100% for each process metric. It is a heuristic, not a claim that CPU usage always means a process needs more memory. The adaptive policy is deliberately conservative and should be validated with real-world A/B tests.
 
 ## Why a separate companion process is required
 

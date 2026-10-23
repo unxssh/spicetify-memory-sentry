@@ -21,7 +21,7 @@ jobs:
           mkdir -p dist
           zip -r "dist/MemorySentry-${GITHUB_REF_NAME}.zip" \
             README.md LICENSE PRIVACY.md SECURITY.md CHANGELOG.md manifest.json preview.png \
-            Install.bat Uninstall.bat app helper installer docs tests .github
+            .gitignore Install.bat Uninstall.bat app helper installer native docs tests .github
           cd dist
           sha256sum "MemorySentry-${GITHUB_REF_NAME}.zip" > "MemorySentry-${GITHUB_REF_NAME}.zip.sha256"
       - name: Publish GitHub Release

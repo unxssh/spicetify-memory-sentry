@@ -10,7 +10,7 @@
 ## 0.2.0 — Adaptive policy preview
 
 - Replaced the user-selected fixed per-process cap with a role-based adaptive policy.
-- Raised a process ceiling by 8 MB after sustained CPU usage at or above 10% of total logical CPU capacity for six seconds.
+- Raised a process ceiling by 8 MB after sustained CPU usage at or above 10% of one logical processor for six seconds.
 - Lowered a ceiling by 4 MB after sustained CPU usage at or below 3% and at least 6 MB of working-set headroom for ten seconds.
 - Added hysteresis, per-role bounds, and an adjustment cooldown to prevent rapid oscillation.
 - Added local CPU estimates and per-process adaptive ceilings to the dashboard.
