@@ -1,13 +1,23 @@
 name: Build and publish Memory Sentry
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
+    paths:
+      - '.github/workflows/release.yml'
+      - 'native/rust/Cargo.toml'
+      - 'native/rust/Cargo.lock'
+      - 'native/rust/src/runtime.rs'
+      - 'installer/inno/MemorySentry.iss'
+      - 'CHANGELOG.md'
 permissions:
   contents: write
 
 jobs:
   build-release:
+    if: "${{ startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release): publish v')) }}"
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,14 +25,19 @@ jobs:
         with:
           node-version: 22
       - uses: dtolnay/rust-toolchain@stable
-      - name: Ensure release tag matches Cargo version
+      - name: Validate release version
+        id: version
         shell: pwsh
         run: |
           $cargo = Get-Content native/rust/Cargo.toml -Raw
           if ($cargo -notmatch '(?m)^version\s*=\s*"([^"]+)"') { throw "Could not read Cargo version." }
-          $cargoVersion = $Matches[1]
-          $tagVersion = $env:GITHUB_REF_NAME.TrimStart('v')
-          if ($tagVersion -ne $cargoVersion) { throw "Release tag $tagVersion does not match Cargo version $cargoVersion." }
+          $version = $Matches[1]
+          if ($env:GITHUB_REF_TYPE -eq "tag") {
+            $tagVersion = $env:GITHUB_REF_NAME.TrimStart('v')
+            if ($tagVersion -ne $version) { throw "Release tag $tagVersion does not match Cargo version $version." }
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag_name=v$version" >> $env:GITHUB_OUTPUT
       - name: Run Rust tests
         run: cargo test --manifest-path native/rust/Cargo.toml --locked
       - name: Build native Windows x64 companion
@@ -34,14 +49,17 @@ jobs:
         run: choco install innosetup --yes --no-progress
       - name: Build Setup EXE, portable ZIP and checksums
         shell: pwsh
-        run: .\scripts\build-package.ps1 -Version $env:GITHUB_REF_NAME.TrimStart('v')
+        run: .\scripts\build-package.ps1 -Version "${{ steps.version.outputs.version }}"
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          target_commitish: ${{ github.sha }}
           generate_release_notes: true
-          # Version 0.x remains an explicitly experimental prerelease until the required Windows desktop test matrix is complete.
-          prerelease: ${{ contains(github.ref_name, '-pre') || startsWith(github.ref_name, 'v0.') }}
-          make_latest: false
+          body: |
+            **Experimental 0.x release.** The complete real-desktop Windows 10/11 audio, recovery, and restore-latency test matrix remains outstanding. Please review README.md and docs/RELEASE_CHECKLIST.md; do not treat this build as stable software.
+          prerelease: ${{ contains(steps.version.outputs.version, '-pre') || startsWith(steps.version.outputs.version, '0.') }}
+          make_latest: ${{ !contains(steps.version.outputs.version, '-pre') && !startsWith(steps.version.outputs.version, '0.') }}
           files: |
             dist/MemorySentrySetup-*.exe
             dist/MemorySentrySetup-*.exe.sha256
