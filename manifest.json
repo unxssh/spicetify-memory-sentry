@@ -1,7 +1,7 @@
 {
   "name": "Memory Sentry",
   "description": "Windows 10 and Windows 11 only. Experimental Spotify memory dashboard; the separate native companion installer is required. No telemetry.",
-  "preview": "COM.png",
+  "preview": "assets/marketplace-preview-sharp.svg",
   "readme": "README.md",
   "authors": [
     {

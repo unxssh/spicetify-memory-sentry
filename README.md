@@ -35,7 +35,7 @@ Installing only the Marketplace Custom App does not enable native memory optimiz
 
 | With Memory Sentry | Without Memory Sentry |
 | --- | --- |
-| ![Task Manager capture with Memory Sentry enabled](COM.png) | ![Task Manager capture without Memory Sentry](SEM.png) |
+| ![Task Manager capture with Memory Sentry enabled](assets/COM-sharp.svg) | ![Task Manager capture without Memory Sentry](assets/SEM-sharp.svg) |
 
 These are the two supplied captures, not fabricated dashboard mockups. They illustrate the captured states only; they do not establish a repeatable performance benchmark or promise the same RAM reduction on another PC.
 

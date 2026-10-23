@@ -15,7 +15,7 @@ const requiredFiles = [
   'app/index.js', 'app/manifest.json', 'helper/helper.js', 'helper/adaptive-policy.js',
   'helper/package.json', 'installer/Install.ps1', 'installer/Uninstall.ps1', 'Install.bat',
   'Uninstall.bat', '.gitignore', 'manifest.json', 'README.md', 'LICENSE', 'PRIVACY.md', 'SECURITY.md',
-  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'docs/TROUBLESHOOTING.md', 'installer/inno/MemorySentry.iss', 'scripts/build-package.ps1', 'native/rust/src/main.rs', 'native/rust/src/lib.rs', 'native/rust/src/runtime.rs', 'native/rust/src/platform/windows.rs', 'COM.png', 'SEM.png', 'assets/marketplace-banner.svg',
+  'CHANGELOG.md', 'docs/BENCHMARKING.md', 'docs/MARKETPLACE.md', 'docs/INSTALLATION.md', 'docs/RUST-MIGRATION.md', 'docs/RELEASE_CHECKLIST.md', 'docs/DEVELOPMENT.md', 'docs/TROUBLESHOOTING.md', 'installer/inno/MemorySentry.iss', 'scripts/build-package.ps1', 'native/rust/src/main.rs', 'native/rust/src/lib.rs', 'native/rust/src/runtime.rs', 'native/rust/src/platform/windows.rs', 'COM.png', 'SEM.png', 'assets/marketplace-banner.svg', 'assets/marketplace-preview-sharp.svg', 'assets/COM-sharp.svg', 'assets/SEM-sharp.svg',
   '.github/workflows/validate.yml', '.github/workflows/release.yml'
 ];
 for (const file of requiredFiles) check(`exists: ${file}`, fs.existsSync(path.join(root, file)));
@@ -27,10 +27,12 @@ try { appManifest = JSON.parse(read('app/manifest.json')); } catch (_) { check('
 try { marketplaceManifest = JSON.parse(read('manifest.json')); } catch (_) { check('Marketplace manifest JSON', false); }
 try { packageJson = JSON.parse(read('helper/package.json')); } catch (_) { check('helper package JSON', false); }
 check('Spicetify Custom App manifest is valid', Boolean(appManifest.name && appManifest.icon && appManifest['active-icon']));
-check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'COM.png' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
+check('root manifest is Marketplace metadata', marketplaceManifest.name === 'Memory Sentry' && marketplaceManifest.preview === 'assets/marketplace-preview-sharp.svg' && marketplaceManifest.readme === 'README.md' && !marketplaceManifest.main);
 check('Marketplace metadata has useful discovery tags and author attribution', Array.isArray(marketplaceManifest.tags) && ['spotify', 'performance', 'memory', 'windows'].every(tag => marketplaceManifest.tags.includes(tag)) && marketplaceManifest.authors?.some(author => author.url === 'https://github.com/yanlvl99'));
 check('Marketplace banner uses the exact committed COM/SEM screenshots', /^<svg\s/.test(read('assets/marketplace-banner.svg')) && /data:image\/png;base64,/.test(read('assets/marketplace-banner.svg')) && /WITH MEMORY SENTRY/.test(read('assets/marketplace-banner.svg')) && /WITHOUT MEMORY SENTRY/.test(read('assets/marketplace-banner.svg')) && read('assets/marketplace-banner.svg').includes(fs.readFileSync(path.join(root, 'COM.png')).toString('base64')) && read('assets/marketplace-banner.svg').includes(fs.readFileSync(path.join(root, 'SEM.png')).toString('base64')));
 check('obsolete mockup preview files were removed', !fs.existsSync(path.join(root, 'preview.png')) && !fs.existsSync(path.join(root, 'assets/marketplace-preview.svg')));
+check('sharp Marketplace preview uses the exact COM.png capture', read('assets/marketplace-preview-sharp.svg').includes(fs.readFileSync(path.join(root, 'COM.png')).toString('base64')) && /feConvolveMatrix/.test(read('assets/marketplace-preview-sharp.svg')));
+check('README sharp views use the exact COM/SEM captures', read('assets/COM-sharp.svg').includes(fs.readFileSync(path.join(root, 'COM.png')).toString('base64')) && read('assets/SEM-sharp.svg').includes(fs.readFileSync(path.join(root, 'SEM.png')).toString('base64')) && /feConvolveMatrix/.test(read('assets/COM-sharp.svg')) && /feConvolveMatrix/.test(read('assets/SEM-sharp.svg')));
 check('README discloses that screenshot comparisons are not controlled benchmarks', /not a controlled benchmark/i.test(read('README.md')) && /COM\.png/.test(read('README.md')) && /SEM\.png/.test(read('README.md')));
 check('Marketplace description discloses separate helper', /native companion installer/i.test(marketplaceManifest.description));
 check('Marketplace listing explicitly limits support to Windows 10 and 11', /Windows 10 and Windows 11 only/i.test(marketplaceManifest.description));

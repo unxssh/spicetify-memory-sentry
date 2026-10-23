@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Apply restrained SVG edge sharpening to the exact `COM.png` and `SEM.png` captures in the Marketplace preview, README comparison, and banner. Original PNG files and their displayed values remain unchanged; no mock screenshots or generated metrics are used.
 - Replace generated mock Task Manager artwork with the two committed `COM.png` and `SEM.png` captures; use `COM.png` as the Marketplace preview.
 - Build the README banner only from those exact captures and state that results are illustrative rather than a controlled benchmark.
 - Remove the obsolete `preview.png` and `assets/marketplace-preview.svg`; include the real screenshots and banner in the portable package.
