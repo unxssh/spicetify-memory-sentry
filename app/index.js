@@ -5,17 +5,19 @@ const h = MSSReact.createElement;
 const MSS_API = 'http://127.0.0.1:38472';
 const MSS_TOKEN = '__MSS_TOKEN__';
 const MSS_GITHUB_URL = 'https://github.com/yanlvl99/spicetify-memory-sentry';
+const MSS_RELEASES_URL = `${MSS_GITHUB_URL}/releases`;
+const MSS_INSTALL_GUIDE_URL = `${MSS_GITHUB_URL}/blob/main/docs/INSTALLATION.md`;
 const MSS_LOCALE = (typeof navigator !== 'undefined' && /^pt(?:-|$)/i.test(navigator.language || '')) ? 'pt-BR' : 'en-US';
 const MSS_PT = MSS_LOCALE === 'pt-BR';
 
 const MSS_TEXT = {
   en: {
-    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · v0.2.0', title: 'Memory Sentry',
-    intro: 'Adaptive memory management for Spotify Desktop. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
+    kicker: 'SPICETIFY · WINDOWS MEMORY TOOL · PREVIEW v0.3.4', title: 'Memory Sentry',
+    intro: 'Adaptive memory management for Spotify Desktop. Supported operating systems: Windows 10 and Windows 11 only. When Spotify is minimized or hidden, the Windows companion adjusts per-process working-set limits based on sustained CPU activity and available memory headroom. Original limits are restored when the window returns.',
     connected: 'Companion connected', unavailable: 'Connection unavailable', waiting: 'Waiting for companion',
     helperMissingTitle: 'Windows companion is not connected',
-    helperMissingBody: 'The Spicetify page cannot control native Windows memory limits on its own. Download the open-source project ZIP from GitHub, install the Windows companion, then reopen Spotify.',
-    helperButton: 'Open source & downloads', nodeButton: 'Get Node.js', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
+    helperMissingBody: 'The dashboard cannot reach the local Windows companion API. This can happen even when setup completed. The detailed connection error is shown below; check the local startup log if needed.',
+    helperButton: 'Download official setup', installGuideButton: 'Marketplace setup guide', safety: 'Audio-service processes are always excluded. Memory limits affect resident RAM, not all committed memory. Windows may need time to page data back in when Spotify is restored.',
     spotifyRam: 'Spotify resident memory', ramNote: '{count} Spotify processes detected. Summing working sets can double-count shared pages.',
     optimizedRam: 'Managed-process memory', managedNote: '{count} non-audio processes are currently eligible for optimization.',
     activeLimits: 'Adaptive limits active', activeNote: 'Per-process working-set ceilings managed automatically.',
@@ -33,19 +35,19 @@ const MSS_TEXT = {
     behavior: 'Automatic policy', active: 'Enable automatic optimization', autoExplanation: 'Optimize only after Spotify has remained minimized or hidden for the selected delay. Original native limits are restored when it becomes visible.',
     delay: 'Delay after minimize/hide', delayExplanation: 'Avoids optimizing during brief minimizations. Process limits adapt automatically; there is no fixed user-set RAM cap.',
     seconds: '{value} seconds', save: 'Save settings', saving: 'Saving…', savedLocal: 'Settings are stored locally on this PC.',
-    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local companion. Check that installation completed and Node.js is available. The API is restricted to 127.0.0.1.',
-    footer: 'Open source under GPL-3.0. No telemetry is uploaded. CPU and memory metrics stay on this computer. The companion uses a separate process because a Spicetify JavaScript app cannot call the required Win32 working-set APIs directly.',
+    events: 'Recent activity', noEvents: 'No activity recorded yet.', statusError: 'Could not connect to the local Rust companion. The diagnostic appears in brackets; check startup.log in %LOCALAPPDATA%\\SpicetifyMemorySentry\\logs.',
+    footer: 'Supported OS: Windows 10 and Windows 11 desktop editions only. The native Rust companion is open source under GPL-3.0. No telemetry is uploaded. CPU and memory diagnostics stay on this PC. A separate process is required to call native Win32 working-set APIs.',
     confirmRestore: 'Restore the original Windows working-set limits for Spotify processes now? If Spotify is still hidden, automatic optimization may apply adaptive limits again after the configured delay.',
     restoreFailed: 'Could not restore the original limits.', saveFailed: 'Could not save settings.', helperApiError: 'The local companion returned an error.',
     window: { foreground: 'Spotify in foreground', 'background-visible': 'Spotify visible in background', minimized: 'Spotify minimized', hidden: 'Spotify window hidden', 'not-running': 'Spotify is not running', 'window-not-found': 'Spotify found; window not located', 'window-check-error': 'Window state unavailable', 'not-detected': 'Waiting for detection' }
   },
   pt: {
-    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · v0.2.0', title: 'Memory Sentry',
-    intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
+    kicker: 'SPICETIFY · FERRAMENTA DE RAM PARA WINDOWS · PREVIEW v0.3.4', title: 'Memory Sentry',
+    intro: 'Gerenciamento adaptativo de memória para o Spotify Desktop. Sistemas compatíveis: somente Windows 10 e Windows 11. Quando o Spotify fica minimizado ou oculto, o auxiliar do Windows ajusta os limites de working set por processo conforme a atividade sustentada de CPU e a folga de memória. Os limites originais são restaurados quando a janela volta.',
     connected: 'Auxiliar conectado', unavailable: 'Conexão indisponível', waiting: 'Aguardando auxiliar',
     helperMissingTitle: 'O auxiliar do Windows não está conectado',
-    helperMissingBody: 'A página do Spicetify não consegue controlar sozinha os limites nativos de memória do Windows. Baixe o ZIP do projeto de código aberto no GitHub, instale o auxiliar do Windows e reabra o Spotify.',
-    helperButton: 'Abrir código e downloads', nodeButton: 'Baixar Node.js', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
+    helperMissingBody: 'O painel não consegue acessar a API local do auxiliar do Windows. Isso também pode acontecer mesmo quando a instalação terminou. O erro detalhado aparece abaixo; consulte o log local de inicialização se necessário.',
+    helperButton: 'Baixar instalador oficial', installGuideButton: 'Guia de instalação do Marketplace', safety: 'Processos de serviço de áudio ficam sempre excluídos. Os limites afetam a RAM residente, não toda a memória comprometida. O Windows pode precisar de tempo para trazer os dados de volta à RAM quando o Spotify é restaurado.',
     spotifyRam: 'Memória residente do Spotify', ramNote: '{count} processos do Spotify detectados. A soma dos working sets pode contar páginas compartilhadas mais de uma vez.',
     optimizedRam: 'Memória dos processos gerenciados', managedNote: '{count} processos sem relação com áudio estão elegíveis para otimização.',
     activeLimits: 'Limites adaptativos ativos', activeNote: 'Limites de working set por processo, administrados automaticamente.',
@@ -63,8 +65,8 @@ const MSS_TEXT = {
     behavior: 'Política automática', active: 'Ativar otimização automática', autoExplanation: 'Otimiza somente depois que o Spotify permanece minimizado ou oculto pelo tempo selecionado. Os limites nativos originais são restaurados quando a janela fica visível.',
     delay: 'Atraso após minimizar/ocultar', delayExplanation: 'Evita otimizar em minimizações rápidas. Os limites por processo se adaptam automaticamente; não existe um teto fixo de RAM configurado manualmente.',
     seconds: '{value} segundos', save: 'Salvar configurações', saving: 'Salvando…', savedLocal: 'As configurações ficam salvas localmente neste PC.',
-    events: 'Atividade recente', noEvents: 'Ainda não há atividade registrada.', statusError: 'Não foi possível conectar ao auxiliar local. Confira se a instalação terminou e se o Node.js está disponível. A API aceita conexões somente por 127.0.0.1.',
-    footer: 'Código aberto sob GPL-3.0. Nenhuma telemetria é enviada. As métricas de CPU e memória ficam neste computador. O auxiliar é um processo separado porque uma aplicação JavaScript do Spicetify não pode chamar diretamente as APIs Win32 necessárias para o working set.',
+    events: 'Atividade recente', noEvents: 'Ainda não há atividade registrada.', statusError: 'Não foi possível conectar ao auxiliar Rust local. O diagnóstico aparece entre colchetes; consulte startup.log em %LOCALAPPDATA%\\SpicetifyMemorySentry\\logs.',
+    footer: 'Compatível apenas com Windows 10 e Windows 11 (desktop). O auxiliar nativo em Rust é código aberto sob GPL-3.0. Nenhuma telemetria é enviada. Os diagnósticos de CPU e memória ficam neste PC. Um processo separado é necessário para chamar as APIs Win32 de working set.',
     confirmRestore: 'Restaurar agora os limites originais de working set dos processos do Spotify? Se o Spotify continuar oculto, a otimização automática poderá aplicar limites adaptativos novamente depois do atraso configurado.',
     restoreFailed: 'Não foi possível restaurar os limites originais.', saveFailed: 'Não foi possível salvar as configurações.', helperApiError: 'O auxiliar local retornou um erro.',
     window: { foreground: 'Spotify em primeiro plano', 'background-visible': 'Spotify visível em segundo plano', minimized: 'Spotify minimizado', hidden: 'Janela do Spotify oculta', 'not-running': 'Spotify não está aberto', 'window-not-found': 'Spotify detectado; janela não localizada', 'window-check-error': 'Estado da janela indisponível', 'not-detected': 'Aguardando detecção' }
@@ -145,10 +147,10 @@ function MSSRoleLabel(role) {
   return ({ Main: 'Principal', GPU: 'GPU', Renderer: 'Renderização', Utility: 'Utilitário', Crashpad: 'Relatório de falhas', Helper: 'Auxiliar', Audio: 'Áudio' })[role] || role;
 }
 function MSSOpenGitHub() {
-  window.open(MSS_GITHUB_URL, '_blank', 'noopener,noreferrer');
+  window.open(MSS_RELEASES_URL, '_blank', 'noopener,noreferrer');
 }
-function MSSOpenNode() {
-  window.open('https://nodejs.org/en/download', '_blank', 'noopener,noreferrer');
+function MSSOpenInstallGuide() {
+  window.open(MSS_INSTALL_GUIDE_URL, '_blank', 'noopener,noreferrer');
 }
 function MSSDate(value) {
   return value ? new Date(value).toLocaleTimeString(MSS_LOCALE) : '—';
@@ -170,7 +172,12 @@ function MSSApp() {
         if (!alive) return;
         setStatus(data); setError('');
         if (!settingsLoaded && data.config) { setConfig({ autoOptimize: data.config.autoOptimize !== false, hiddenDelaySeconds: data.config.hiddenDelaySeconds || 2 }); setSettingsLoaded(true); }
-      } catch (err) { if (alive) setError(tx('statusError')); }
+      } catch (err) {
+        if (alive) {
+          const detail = err && err.message ? String(err.message) : String(err || 'Unknown error');
+          setError(tx('statusError') + ' [' + detail + ']');
+        }
+      }
     }
     refresh();
     const timer = window.setInterval(refresh, 2500);
@@ -210,7 +217,7 @@ function MSSApp() {
         h('div', { className: 'mss-small', style: { marginTop: '10px' } }, `${MSSWindowLabel(spotify.windowState || 'not-detected')} · ${MSS_PT ? 'Idioma automático: português' : 'Auto language: English'}`)),
       h('div', { className: 'mss-pill' }, h('span', { className: 'mss-dot', style: { background: error ? '#e05252' : (helperRunning ? 'var(--spice-button,#1ed760)' : '#d6a03d') } }), error ? tx('unavailable') : (helperRunning ? tx('connected') : tx('waiting')))
     ),
-    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${tx('statusError')}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenNode }, tx('nodeButton')))) : null,
+    error ? h('section', { className: 'mss-notice mss-notice-error' }, h('strong', null, tx('helperMissingTitle')), h('p', { style: { margin: '7px 0 0' } }, `${tx('helperMissingBody')} ${error}`), h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', onClick: MSSOpenGitHub }, tx('helperButton')), h('button', { className: 'mss-btn mss-btn-secondary', onClick: MSSOpenInstallGuide }, tx('installGuideButton')))) : null,
     h('div', { className: 'mss-notice mss-notice-warn' }, tx('safety')),
     h('div', { className: 'mss-grid' },
       card(tx('spotifyRam'), MSSFormatMB(memory.spotifyTotalMB), 'MB', tx('ramNote', { count: memory.processCount || 0 })),
@@ -234,18 +241,18 @@ function MSSApp() {
       })) : h('div', { className: 'mss-empty' }, tx('noneDetected')),
       h('div', { className: 'mss-actions' },
         h('button', { className: 'mss-btn mss-btn-primary', disabled: busy || !helperRunning || !activeCount, onClick: restoreLimits }, busy ? tx('restoring') : tx('restoreNow')),
-        h('button', { className: 'mss-btn mss-btn-secondary', disabled: !helperRunning, onClick: async () => { try { setStatus(await MSSRequest('/api/status')); setError(''); } catch (_) { setError(tx('statusError')); } } }, tx('refresh')),
+        h('button', { className: 'mss-btn mss-btn-secondary', disabled: !helperRunning, onClick: async () => { try { setStatus(await MSSRequest('/api/status')); setError(''); } catch (err) { const detail = err && err.message ? String(err.message) : String(err || 'Unknown error'); setError(tx('statusError') + ' [' + detail + ']'); } } }, tx('refresh')),
         telemetry.lastAdaptiveAdjustmentAt ? h('span', { className: 'mss-small' }, tx('lastAdjustment', { time: MSSDate(telemetry.lastAdaptiveAdjustmentAt) })) : null
       ),
       status?.lastAction ? h('div', { className: 'mss-notice' }, tx('lastAction', { count: status.lastAction.applied || 0 })) : null
     ),
     h('section', { className: 'mss-section' },
-      h('div', { className: 'mss-section-head' }, h('h2', { className: 'mss-h2' }, tx('behavior')), h('span', { className: 'mss-small' }, helperRunning ? `Node ${status?.helper?.node || ''}` : 'Node.js')),
+      h('div', { className: 'mss-section-head' }, h('h2', { className: 'mss-h2' }, tx('behavior')), h('span', { className: 'mss-small' }, helperRunning ? `${status?.helper?.runtime || 'Native'} ${status?.helper?.version || ''}` : (MSS_PT ? 'Auxiliar nativo' : 'Native companion'))),
       h('label', { className: 'mss-check', style: { marginBottom: '18px' } }, h('input', { type: 'checkbox', checked: Boolean(config.autoOptimize), onChange: event => setField('autoOptimize', event.target.checked) }), h('span', null, h('strong', null, tx('active')), h('br'), h('span', { className: 'mss-small' }, tx('autoExplanation')))),
       h('div', { className: 'mss-settings' }, h('label', { className: 'mss-setting' }, h('span', { className: 'mss-setting-label' }, tx('delay')), h('select', { className: 'mss-select', value: String(config.hiddenDelaySeconds), onChange: event => setField('hiddenDelaySeconds', Number(event.target.value)) }, [1, 2, 3, 5, 8, 10, 15, 20, 30].map(n => h('option', { key: n, value: String(n) }, tx('seconds', { value: n })))), h('span', { className: 'mss-small' }, tx('delayExplanation')))),
       h('div', { className: 'mss-actions' }, h('button', { className: 'mss-btn mss-btn-primary', disabled: saving || !helperRunning, onClick: saveSettings }, saving ? tx('saving') : tx('save')), h('span', { className: 'mss-small' }, tx('savedLocal')))
     ),
-    h('section', { className: 'mss-section' }, h('div', { className: 'mss-section-head' }, h('h2', { className: 'mss-h2' }, tx('events')), h('span', { className: 'mss-small' }, status?.helper ? `Node ${status.helper.node}` : 'Node.js')),
+    h('section', { className: 'mss-section' }, h('div', { className: 'mss-section-head' }, h('h2', { className: 'mss-h2' }, tx('events')), h('span', { className: 'mss-small' }, status?.helper ? `${status.helper.runtime || 'Native'} ${status.helper.version || ''}` : (MSS_PT ? 'Auxiliar nativo' : 'Native companion'))),
       events.length ? h('div', { className: 'mss-events' }, events.map((event, i) => h('div', { className: 'mss-event', key: `${event.time}-${i}` }, h('span', { className: 'mss-event-time' }, MSSDate(event.time)), h('span', { className: 'mss-event-msg' }, MSSLocalizeEvent(event.message))))) : h('div', { className: 'mss-empty' }, tx('noEvents')),
       status?.lastError ? h('div', { className: 'mss-notice mss-notice-error' }, MSSLocalizeEvent(status.lastError)) : null
     ),

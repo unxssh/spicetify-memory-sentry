@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-labelledby="title desc">
+<title id="title">Memory Sentry — Adaptive Memory Management for Spotify Desktop</title>
+<desc id="desc">Wide banner for Memory Sentry, with a dark green technical background and stylized dashboard and Windows Task Manager panels based on user-provided captures at different moments. No guaranteed RAM savings are claimed.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#05090d"/><stop offset=".52" stop-color="#0b1719"/><stop offset="1" stop-color="#06100d"/></linearGradient>
+  <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1b242a"/><stop offset="1" stop-color="#0c1217"/></linearGradient>
+  <linearGradient id="emerald" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00ef8b"/><stop offset="1" stop-color="#007f5a"/></linearGradient>
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#194333" stroke-width="1" opacity=".28"/></pattern>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#000" flood-opacity=".6"/></filter>
+</defs>
+<rect width="1500" height="500" fill="url(#bg)"/><rect width="1500" height="500" fill="url(#grid)"/>
+<circle cx="1370" cy="60" r="220" fill="#00df86" opacity=".07"/><circle cx="1360" cy="55" r="146" fill="none" stroke="#00eb8a" stroke-width="2" opacity=".27"/>
+<path d="M400 415 C520 365 590 450 700 395 S900 370 1010 435 S1290 450 1500 330" fill="none" stroke="#00db82" stroke-width="2" opacity=".34"/>
+<g transform="translate(65 65)"><rect width="56" height="56" rx="15" fill="#0b3026" stroke="#1ce78d" stroke-width="1.5"/><path d="M9 30h11l7-14 7 25 7-17h6" fill="none" stroke="#50ffae" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text x="137" y="101" fill="#f4f8f8" font-family="Segoe UI,Arial,sans-serif" font-size="42" font-weight="800" letter-spacing="1.3">MEMORY SENTRY</text>
+<text x="66" y="174" fill="#20e789" font-family="Segoe UI,Arial,sans-serif" font-size="26" font-weight="800">Adaptive memory management</text>
+<text x="66" y="211" fill="#f4f8f8" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700">for Spotify Desktop</text>
+<text x="66" y="253" fill="#adbec3" font-family="Segoe UI,Arial,sans-serif" font-size="16">Per-process working-set policy</text>
+<text x="66" y="279" fill="#adbec3" font-family="Segoe UI,Arial,sans-serif" font-size="14">Audio services excluded · Recovery-first design</text>
+<g font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="800" letter-spacing=".5">
+ <rect x="66" y="326" width="176" height="34" rx="17" fill="#0d3025" stroke="#2e8059"/><text x="82" y="347" fill="#c9ffe1">WINDOWS 10 / 11</text>
+ <rect x="252" y="326" width="159" height="34" rx="17" fill="#0d3025" stroke="#2e8059"/><text x="269" y="347" fill="#c9ffe1">RUST COMPANION</text>
+ <rect x="421" y="326" width="133" height="34" rx="17" fill="#0d3025" stroke="#2e8059"/><text x="438" y="347" fill="#c9ffe1">NO TELEMETRY</text>
+</g>
+<text x="66" y="431" fill="#8da3a8" font-family="Segoe UI,Arial,sans-serif" font-size="12">Experimental preview — no guaranteed RAM savings</text>
+<!-- Central dashboard window -->
+<g filter="url(#shadow)">
+  <rect x="654" y="59" width="576" height="351" rx="14" fill="url(#screen)" stroke="#1eae78" stroke-width="2"/>
+  <path d="M655 91H1229" stroke="#2d4247"/><circle cx="675" cy="76" r="4" fill="#1ce58c"/><circle cx="689" cy="76" r="4" fill="#438f70"/><circle cx="703" cy="76" r="4" fill="#438f70"/>
+  <text x="721" y="80" fill="#eef7f4" font-family="Segoe UI,Arial,sans-serif" font-size="12" font-weight="800">MEMORY SENTRY DASHBOARD</text>
+  <rect x="674" y="105" width="536" height="56" rx="7" fill="#202930" stroke="#35464b"/>
+  <text x="688" y="123" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9" font-weight="700">ILLUSTRATIVE RESIDENT MEMORY</text><text x="688" y="149" fill="#20e789" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="800">64.8 MB</text>
+  <text x="876" y="122" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9" font-weight="700">MANAGED PROCESSES</text><text x="876" y="149" fill="#72baff" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="800">6</text>
+  <text x="1010" y="122" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9" font-weight="700">RESTORE</text><text x="1010" y="149" fill="#20e789" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="800">86 ms</text>
+  <rect x="674" y="173" width="536" height="42" rx="7" fill="#151e23" stroke="#35464b"/>
+  <text x="687" y="190" fill="#f1f7f4" font-family="Segoe UI,Arial,sans-serif" font-size="10" font-weight="800">ADAPTIVE POLICY</text><text x="687" y="205" fill="#c3d1d3" font-family="Segoe UI,Arial,sans-serif" font-size="9">Adjusts eligible process ceilings based on sustained CPU activity and memory headroom.</text>
+  <rect x="674" y="227" width="536" height="144" rx="7" fill="#151e23" stroke="#35464b"/>
+  <text x="688" y="248" fill="#f1f7f4" font-family="Segoe UI,Arial,sans-serif" font-size="10" font-weight="800">PROCESS SNAPSHOT</text>
+  <text x="688" y="268" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9">ROLE</text><text x="932" y="268" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9">WORKING SET</text><text x="1080" y="268" fill="#9db0b5" font-family="Segoe UI,Arial,sans-serif" font-size="9">POLICY</text>
+  <path d="M687 275H1197 M687 304H1197 M687 333H1197" stroke="#2c3b40"/>
+  <text x="688" y="294" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">Main process</text><text x="932" y="294" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">23.4 MB</text><rect x="1080" y="282" width="91" height="18" rx="9" fill="#1d3f2f"/><text x="1095" y="294" fill="#49e99f" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="800">BASELINE</text>
+  <text x="688" y="323" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">Renderer process</text><text x="932" y="323" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">19.0 MB</text><rect x="1080" y="311" width="91" height="18" rx="9" fill="#3d3520"/><text x="1097" y="323" fill="#ffd06a" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="800">ADAPTIVE</text>
+  <text x="688" y="352" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">Audio service</text><text x="932" y="352" fill="#e5eeee" font-family="Segoe UI,Arial,sans-serif" font-size="10">Excluded</text><rect x="1080" y="340" width="91" height="18" rx="9" fill="#1d3f2f"/><text x="1097" y="352" fill="#49e99f" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="800">PROTECTED</text>
+  <text x="675" y="392" fill="#8da3a8" font-family="Segoe UI,Arial,sans-serif" font-size="9">UI figures are illustrative, not a controlled benchmark.</text>
+</g>
+<!-- Two Task Manager observations: not a before-after graphic -->
+<g filter="url(#shadow)">
+  <rect x="1011" y="346" width="224" height="72" rx="8" fill="#10171d" stroke="#2b8e62" stroke-width="1.2"/>
+  <rect x="1012" y="347" width="222" height="19" rx="7" fill="#20282f"/><text x="1022" y="360" fill="#d1dbde" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="700">TASK MANAGER · SNAPSHOT A</text>
+  <rect x="1018" y="370" width="210" height="20" rx="3" fill="#203d4c"/><circle cx="1027" cy="380" r="4" fill="#1ed760"/><text x="1038" y="383" fill="#f1f5f7" font-family="Segoe UI,Arial,sans-serif" font-size="8">Spotify (8)</text><text x="1164" y="383" fill="#f1f5f7" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="700">93.3 MB</text>
+  <rect x="1243" y="346" width="215" height="72" rx="8" fill="#10171d" stroke="#2b8e62" stroke-width="1.2"/>
+  <rect x="1244" y="347" width="213" height="19" rx="7" fill="#20282f"/><text x="1254" y="360" fill="#d1dbde" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="700">TASK MANAGER · SNAPSHOT B</text>
+  <rect x="1250" y="370" width="201" height="20" rx="3" fill="#203d4c"/><circle cx="1259" cy="380" r="4" fill="#1ed760"/><text x="1270" y="383" fill="#f1f5f7" font-family="Segoe UI,Arial,sans-serif" font-size="8">Spotify (8)</text><text x="1377" y="383" fill="#f1f5f7" font-family="Segoe UI,Arial,sans-serif" font-size="8" font-weight="700">338 MB</text>
+</g>
+<text x="1010" y="446" fill="#b2c5c7" font-family="Segoe UI,Arial,sans-serif" font-size="10">User captures at different moments; not a before/after claim.</text>
+</svg>

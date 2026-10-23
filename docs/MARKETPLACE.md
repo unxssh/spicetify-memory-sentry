@@ -1,7 +1,35 @@
-# Marketplace publishing notes
+# Marketplace publishing and support model
 
-The root `manifest.json` is the Spicetify Marketplace listing metadata for the **Custom Apps** category. The public GitHub repository must use the `spicetify-apps` topic and include the manifest, preview image, and README. See the [official publishing guide](https://github.com/spicetify/marketplace/wiki/Publishing-to-Marketplace).
+Memory Sentry supports Windows 10 and Windows 11 desktop editions only (x64 desktop). The project remains experimental; Marketplace discoverability must not be represented as a stable-product endorsement.
 
-Marketplace listing is not a native-helper installer. The Custom App provides the dashboard; the Windows companion is a separate Node.js process because Win32 process working-set APIs cannot be called directly from Spicetify JavaScript. The dashboard shows a button to the official GitHub Releases page when it cannot connect to the companion.
+## Installation and distribution model
 
-Before submitting a Marketplace listing, verify the latest rules, add the `spicetify-apps` topic, check the preview image, and test a clean install/update/uninstall on Windows. Do not claim one-click native installation until the Marketplace has a documented supported path for trusted native companions.
+### Standalone setup
+
+The official per-user setup program and SHA-256 checksums are published on:
+
+https://github.com/yanlvl99/spicetify-memory-sentry/releases
+
+A release contains the compiled Rust companion, the Spicetify Custom App, installer/uninstaller flows, GPL-3.0 license, privacy/security documentation, and checksums. Never label a release stable until clean Windows 10 and Windows 11 desktop tests cover install, upgrade, audio continuity, working-set restoration, and uninstall.
+
+### Marketplace Custom App
+
+Marketplace is a discovery and distribution surface for Spicetify customizations. Memory Sentry's listing is the dashboard, not a native Windows installer. Marketplace cannot silently install or execute an arbitrary Windows program. Users must deliberately download and run the official Setup executable to enable the native companion.
+
+The separate Rust process exposes its API only on loopback, uses a random per-install token, validates Spotify's HTTPS Origin and loopback Host header, writes recovery data before changing process limits, excludes audio-service processes, and refuses unsafe removal if recovery cannot be confirmed. Logs and metrics remain on the PC.
+
+## Listing readiness
+
+The official Marketplace publisher guide requires a public repository, the exact repository topic `spicetify-apps`, and a valid root `manifest.json` with a preview image and README. This repository keeps that root metadata separate from `app/manifest.json`, which is the runtime manifest used by Spicetify.
+
+Before the Marketplace index can discover this repository:
+
+1. Add the repository topic `spicetify-apps` in GitHub's repository About/Topics settings.
+2. Keep the root `manifest.json` preview path valid and the banner/preview assets committed.
+3. Keep the separate native companion requirement and Windows 10/11 limitation explicit in the listing description.
+4. Publish a matching GitHub release with Setup and SHA-256 files.
+5. Test the missing-helper dashboard, a clean installation, upgrade, and uninstall on Windows 10 and Windows 11.
+
+Adding the topic makes the repository eligible for Marketplace discovery; it does not mean Marketplace has already indexed or approved the app. The custom app entry does not replace the standalone native companion installer.
+
+Official publishing guide: https://github.com/spicetify/marketplace/wiki/Publishing-to-Marketplace
