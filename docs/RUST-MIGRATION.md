@@ -2,7 +2,7 @@
 
 ## Current preview status
 
-The Rust source now contains an adaptive policy, Win32 process discovery and working-set calls, a loopback-only dashboard API, a per-install token, Windows 10/11 validation, legacy recovery hooks, per-user startup, and a recovery-aware uninstall command. One reported hands-on setup observed uninterrupted playback, no UI reload or loss of the current view/state, and an occasional delay of a few seconds before input responded after restore. This is a single-environment report, not a completed Windows 10/11 release matrix; broader end-to-end checks for install, recovery, audio continuity, and restore-to-interaction latency remain required.
+The Rust source now contains an adaptive policy, Win32 process discovery and working-set calls, a loopback-only dashboard API, a per-install token, Windows 10/11 validation, legacy recovery hooks, per-user startup, and a recovery-aware uninstall command. The intended behavior across supported Windows 10/11 x64 desktop PCs is substantial reduction of Spotify's resident working set while minimized or hidden. The exact reduction varies by PC and workload. On very low-end hardware, the window can briefly appear black during restore without that alone proving the page reloaded; test whether the previous UI page and state return, and record any input delay. The full cross-device end-to-end test matrix remains required.
 
 The Rust helper is the intended native companion for the preview installer. It uses no third-party Rust crates in the current core, so there is no global Node.js/Koffi requirement for new installs. Legacy Node recovery is retained to help previous users restore old limits safely.
 

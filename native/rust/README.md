@@ -1,6 +1,6 @@
 # Memory Sentry Rust companion
 
-**Status: experimental.** The Windows x64 companion implements the local API, adaptive working-set policy, process-identity checks, audio-service exclusions, recovery persistence, and per-user startup/uninstall flow. One reported hands-on setup retained playback and UI state without reloading; input occasionally took a few seconds to respond after restore. The project is not considered stable until the broader Windows 10/11 desktop test matrix passes.
+**Status: experimental.** The Windows x64 companion implements the local API, adaptive working-set policy, process-identity checks, audio-service exclusions, recovery persistence, and per-user startup/uninstall flow. It is designed to substantially reduce Spotify's resident working set while minimized or hidden on supported Windows 10/11 x64 desktop PCs; actual savings vary. On very low-end PCs, a temporary black screen may appear during restore without necessarily indicating a page reload if the previous UI state returns. The project is not considered stable until the broader Windows 10/11 desktop test matrix passes.
 
 ## Build and test
 

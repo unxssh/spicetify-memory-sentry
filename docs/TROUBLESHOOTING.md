@@ -35,9 +35,11 @@ A previous version may have working-set-backup.json containing original Win32 li
 
 ## Spotify takes a moment to accept input after being restored
 
-In one reported setup, playback continued and Spotify returned to the same interface view/state without reloading. Occasionally, keyboard or mouse input took a few seconds to respond after the window became visible. This is a restore-to-interaction delay; it does not by itself mean Spotify restarted or lost its state.
+Memory Sentry is designed to substantially reduce Spotify's resident working set while minimized or hidden on supported Windows 10/11 x64 desktop PCs. Actual savings vary by PC and workload.
 
-The dashboard's **Limit restoration duration** measures the helper's operation, not the time until Spotify accepts the first input. Page faults can be one factor when memory pages need to become resident again, but the available counters do not identify the cause of a particular delay. If the delay is repeatedly long or disrupts use, disable automatic optimization in the dashboard and include local logs plus manually measured restore-to-interaction times in a report.
+On very low-end PCs, the window can briefly appear black while Spotify's interface becomes visible again. **That alone does not prove a reload or loss of state.** Check whether the previous page and UI state return as they were. Input may also take a few seconds to respond after the window is restored. A persistent black screen, lost state, crash, interrupted playback, or unusably long delay is not something to dismiss as normal.
+
+The dashboard's **Limit restoration duration** measures the helper's limit-restoration operation, not the time until Spotify accepts the first input. Page faults may contribute to delay, but the available counters do not identify the cause of a particular event. If the problem persists, disable automatic optimization and include local logs plus manually measured restore-to-interaction times in a report.
 
 ## Uninstall stops because recovery failed
 

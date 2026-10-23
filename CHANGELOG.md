@@ -2,10 +2,11 @@
 
 ## Unreleased
 
-- Correct README, troubleshooting, benchmarking, migration, development-guide, and dashboard copy to describe the reported behavior: playback continued, the UI did not reload or lose its current state, and input could take a few seconds to respond after restoring the window.
+- Clarify that substantial resident-memory reduction while Spotify is minimized/hidden is the intended behavior across supported Windows 10/11 x64 desktop PCs, while actual savings vary by machine and workload.
 - Document the approximately 40 MB initial and 100 MB settled combined Spotify working-set figures as observations from one setup, not guaranteed memory targets.
-- Move the Task Manager comparison previews near the top of the README and expand the restore-to-interaction benchmark criteria.
-- Keep the broader Windows 10/11 release-validation checklist open; a single report does not establish compatibility across systems.
+- Explain that a very low-end PC can briefly show a black window during restore without that alone proving the page reloaded; verify whether the previous UI state returns.
+- Move the Task Manager comparison previews near the top of the README and expand restore testing to include playback, UI reload/state retention, black-screen recovery, and first-input latency.
+- Keep the broader Windows 10/11 release-validation checklist open until that behavior has been tested across real desktop configurations.
 
 ## 1.0.0-rc.1 — Release candidate and installation consolidation
 

@@ -6,9 +6,9 @@ The aim is to determine whether lower resident memory is worth any extra interac
 
 1. Start Spotify and keep the same game, browser tabs, and background apps open throughout the test.
 2. Record the working-set sum, private memory where available, current process CPU estimates, and the adaptive ceiling for each managed process.
-3. Minimize Spotify for at least 60 seconds, then restore it. Measure from window focus until the first successful click/keyboard action. Record whether playback continued, whether the UI reloaded, and whether the same page/view and state were retained. Repeat five times.
+3. Minimize Spotify for at least 60 seconds, then restore it. Measure from window focus until the first successful click/keyboard action. Record whether playback continued, whether the UI reloaded, whether the same page/view and state returned, and whether a temporary black screen appeared during restore. Repeat five times on each test PC.
 4. Repeat with another workload and again after a fresh Spotify start. Do not change code or settings between comparable samples.
-5. Compare median restore-to-interaction time, minimum resident working set, page-fault deltas, CPU estimates, playback interruptions, UI reload/state loss, and whether the adaptive policy raises or lowers ceilings.
+5. Compare median restore-to-interaction time, working-set reduction while minimized, page-fault deltas, CPU estimates, playback interruptions, UI reload/state loss, black-screen recovery, and whether the adaptive policy raises or lowers ceilings.
 
 ## Interpreting metrics
 
