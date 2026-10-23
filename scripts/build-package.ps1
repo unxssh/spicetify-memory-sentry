@@ -53,11 +53,21 @@ foreach ($name in @(
 )) {
     Copy-Item -LiteralPath (Join-Path $Root $name) -Destination $Portable -Force
 }
-foreach ($directory in @("app", "helper", "installer", "native", "docs", "tests", "scripts", ".github")) {
+foreach ($directory in @("app", "helper", "installer", "docs", "tests", "scripts", ".github")) {
     $destination = Join-Path $Portable $directory
     New-Item -ItemType Directory -Path $destination -Force | Out-Null
     Copy-Item -Path (Join-Path $Root ($directory + "\*")) -Destination $destination -Recurse -Force
 }
+
+# Include Rust source and manifests, but never the Cargo target/build cache.
+$NativeSource = Join-Path $Root "native\rust"
+$NativeDestination = Join-Path $Portable "native\rust"
+$NativeSourceDestination = Join-Path $NativeDestination "src"
+New-Item -ItemType Directory -Path $NativeSourceDestination -Force | Out-Null
+foreach ($name in @("Cargo.toml", "Cargo.lock", "README.md")) {
+    Copy-Item -LiteralPath (Join-Path $NativeSource $name) -Destination $NativeDestination -Force
+}
+Copy-Item -Path (Join-Path $NativeSource "src\*") -Destination $NativeSourceDestination -Recurse -Force
 $PortableZip = Join-Path $Dist ("MemorySentry-" + $Version + "-windows-x64.zip")
 if (Test-Path -LiteralPath $PortableZip) { Remove-Item -LiteralPath $PortableZip -Force }
 Compress-Archive -Path (Join-Path $Portable "*") -DestinationPath $PortableZip -CompressionLevel Optimal

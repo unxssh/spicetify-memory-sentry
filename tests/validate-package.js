@@ -42,6 +42,7 @@ check('security notes never disable antivirus', /does not disable antivirus/i.te
 check('Marketplace preview exists', fs.existsSync(path.join(root, marketplaceManifest.preview)));
 check('release action publishes setup, package ZIP and SHA-256', /MemorySentrySetup/.test(read('.github/workflows/release.yml')) && /MemorySentry-.*windows-x64/.test(read('.github/workflows/release.yml')) && /action-gh-release/i.test(read('.github/workflows/release.yml')));
 check('source package includes native Rust files', /"native"/.test(read('scripts/build-package.ps1')) && /native/.test(read('.github/workflows/release.yml')));
+check('portable package copies Rust sources only and excludes Cargo target artifacts', !/"app", "helper", "installer", "native"/.test(buildScript) && /Cargo\.toml/.test(buildScript) && /src\\\\\*/.test(buildScript));
 
 const app = read('app/index.js');
 const helper = read('helper/helper.js');
