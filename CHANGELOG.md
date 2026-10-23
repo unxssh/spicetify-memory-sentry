@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Replace generated mock Task Manager artwork with the two committed `COM.png` and `SEM.png` captures; use `COM.png` as the Marketplace preview.
+- Build the README banner only from those exact captures and state that results are illustrative rather than a controlled benchmark.
+- Remove the obsolete `preview.png` and `assets/marketplace-preview.svg`; include the real screenshots and banner in the portable package.
+- Update Marketplace metadata/tests to validate the real assets and document the required GitHub topic `spicetify-apps`.
+
 ## 0.3.4 — Installer diagnostics and startup ordering (experimental)
 
 - Remove the incorrect requirement to close Spotify manually; Spicetify apply handles its refresh/restart during install and uninstall.

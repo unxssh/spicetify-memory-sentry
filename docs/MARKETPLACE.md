@@ -25,7 +25,7 @@ The official Marketplace publisher guide requires a public repository, the exact
 Before the Marketplace index can discover this repository:
 
 1. Add the repository topic `spicetify-apps` in GitHub's repository About/Topics settings.
-2. Keep the root `manifest.json` preview path valid and the banner/preview assets committed.
+2. Keep the root `manifest.json` preview set to `COM.png`. Both `COM.png` and `SEM.png` are the supplied Task Manager captures; `assets/marketplace-banner.svg` combines those exact images without inventing additional metrics.
 3. Keep the separate native companion requirement and Windows 10/11 limitation explicit in the listing description.
 4. Publish a matching GitHub release with Setup and SHA-256 files.
 5. Test the missing-helper dashboard, a clean installation, upgrade, and uninstall on Windows 10 and Windows 11.

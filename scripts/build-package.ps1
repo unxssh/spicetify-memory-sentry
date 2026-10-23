@@ -49,7 +49,7 @@ foreach ($name in @("INSTALLATION.md", "TROUBLESHOOTING.md")) {
 Copy-Item -LiteralPath (Join-Path $Stage "MemorySentry.exe") -Destination (Join-Path $Portable "MemorySentry.exe") -Force
 foreach ($name in @(
     "README.md", "LICENSE", "PRIVACY.md", "SECURITY.md", "CHANGELOG.md",
-    "manifest.json", "preview.png", ".gitignore", "Install.bat", "Uninstall.bat"
+    "manifest.json", "COM.png", "SEM.png", ".gitignore", "Install.bat", "Uninstall.bat"
 )) {
     Copy-Item -LiteralPath (Join-Path $Root $name) -Destination $Portable -Force
 }

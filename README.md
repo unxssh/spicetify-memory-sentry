@@ -1,6 +1,8 @@
 # Memory Sentry for Spotify Desktop
 
-![Memory Sentry Marketplace banner](assets/marketplace-banner.svg)
+![Memory Sentry comparison banner using the committed Task Manager captures](assets/marketplace-banner.svg)
+
+The two source captures are also available individually: [COM.png — with Memory Sentry](COM.png) and [SEM.png — without Memory Sentry](SEM.png). They illustrate Task Manager readings; they are not a controlled benchmark, and results vary by workload and process state.
 
 **Windows 10 and Windows 11 desktop editions only.** Memory Sentry is an experimental open-source companion for Spotify Desktop and Spicetify. When Spotify is minimized or hidden, it adaptively changes eligible child-process working-set ceilings, protects audio-service processes, and attempts to restore original limits when Spotify becomes visible.
 
@@ -28,6 +30,14 @@ The Inno Setup installer is per-user and does not require a machine-wide MSI ins
 5. When Spotify returns, select Memory Sentry from the sidebar. Use Refresh to confirm that the native companion connected.
 
 Installing only the Marketplace Custom App does not enable native memory optimization. A Custom App cannot silently install or execute an arbitrary Windows program, so the user deliberately downloads and runs the signed-off package.
+
+## Task Manager comparison images
+
+| With Memory Sentry | Without Memory Sentry |
+| --- | --- |
+| ![Task Manager capture with Memory Sentry enabled](COM.png) | ![Task Manager capture without Memory Sentry](SEM.png) |
+
+These are the two supplied captures, not fabricated dashboard mockups. They illustrate the captured states only; they do not establish a repeatable performance benchmark or promise the same RAM reduction on another PC.
 
 ## What the adaptive policy does
 
