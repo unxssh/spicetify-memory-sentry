@@ -40,7 +40,8 @@ check('GPL-3.0 license is present', /GNU GENERAL PUBLIC LICENSE/i.test(read('LIC
 check('privacy explicitly states no uploads', /No information is uploaded/i.test(read('PRIVACY.md')));
 check('security notes never disable antivirus', /does not disable antivirus/i.test(read('SECURITY.md')));
 check('Marketplace preview exists', fs.existsSync(path.join(root, marketplaceManifest.preview)));
-check('release action publishes ZIP and SHA-256', /sha256sum/i.test(read('.github/workflows/release.yml')) && /action-gh-release/i.test(read('.github/workflows/release.yml')));\ncheck('source release archive includes the native Rust scaffold', /native/.test(read('.github/workflows/release.yml')));
+check('release action publishes ZIP and SHA-256', /sha256sum/i.test(read('.github/workflows/release.yml')) && /action-gh-release/i.test(read('.github/workflows/release.yml')));
+check('source release archive includes the native Rust scaffold', /native/.test(read('.github/workflows/release.yml')));
 
 const app = read('app/index.js');
 const helper = read('helper/helper.js');
