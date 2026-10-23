@@ -2,7 +2,7 @@
 //! The UI contract intentionally mirrors the former Node companion so the Custom App stays usable.
 
 use crate::platform;
-use crate::{
+use memory_sentry_core::{
     decide_adjustment, estimate_cpu_percent, AdjustmentDirection, ProcessRole,
     ADJUSTMENT_COOLDOWN_MS, HIGH_CPU_DURATION_MS, HIGH_CPU_PERCENT,
     LOW_CPU_DURATION_MS, LOW_CPU_PERCENT, LOW_WORKING_SET_MARGIN_MB,
@@ -490,7 +490,7 @@ fn ensure_spotify_closed() -> Result<(), String> {
 }
 
 fn register_startup(exe: &Path) -> Result<(), String> {
-    let value = format!("\\"{}\\" --launch", exe.display());
+    let value = format!("\"{}\" --launch", exe.display());
     let output = Command::new("reg.exe")
         .args(["add", r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Memory Sentry", "/t", "REG_SZ", "/d", &value, "/f"])
         .stdin(Stdio::null()).output()
@@ -1012,7 +1012,7 @@ fn update_caps(state: &mut AppState, now: u64) {
         let profile = match state.profiles.get(&process.pid) { Some(p) => p.clone(), None => continue };
         let cpu = cpu.unwrap_or(0.0);
         let ws = working_set.unwrap_or(current_cap as f64);
-        let profile_sample = crate::PolicySample {
+        let profile_sample = memory_sentry_core::PolicySample {
             role,
             current_cap_mb: current_cap,
             working_set_mb: ws,
