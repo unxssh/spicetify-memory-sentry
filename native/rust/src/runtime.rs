@@ -1736,6 +1736,7 @@ fn start_background_copy() -> Result<(), String> {
 
 #[cfg(not(windows))]
 fn start_background_copy() -> Result<(), String> {
+    use std::os::unix::process::CommandExt;
     let exe = std::env::current_exe().map_err(|e| e.to_string())?;
     let base = install_dir()?;
     let log_dir = base.join("logs");
@@ -1743,8 +1744,13 @@ fn start_background_copy() -> Result<(), String> {
     let stdout_log = OpenOptions::new().create(true).append(true).open(log_dir.join("startup.log"))
         .map_err(|e| format!("Could not open startup log: {e}"))?;
     let stderr_log = stdout_log.try_clone().map_err(|e| format!("Could not duplicate startup log handle: {e}"))?;
-    Command::new(exe).arg("--monitor")
-        .stdin(Stdio::null()).stdout(Stdio::from(stdout_log)).stderr(Stdio::from(stderr_log)).spawn()
+    let mut cmd = Command::new(exe);
+    cmd.arg("--monitor")
+        .stdin(Stdio::null())
+        .stdout(Stdio::from(stdout_log))
+        .stderr(Stdio::from(stderr_log))
+        .process_group(0);
+    cmd.spawn()
         .map(|_| ())
         .map_err(|e| format!("Could not start the companion: {e}"))
 }
